@@ -1,6 +1,6 @@
-# AI Chess Solver
+# AI Chess Solver Enhanced
 
-Two AI agents that play chess against each other autonomously using Minimax with Alpha-Beta Pruning, built from scratch in JavaScript.
+Play chess against AI or watch autonomous AI agents compete, with 59 classic endgame positions and human vs AI gameplay. Built from scratch with Minimax and Alpha-Beta Pruning in vanilla JavaScript.
 
 ## The big picture
 
@@ -51,11 +51,14 @@ Good move ordering means the alpha-beta cutoffs happen early, which lets the eng
 
 ## What you can do with it
 
+- **Human vs AI gameplay** — play against the AI with click-to-move interface and highlighted legal moves
 - **Watch AI vs AI matches** — press Start and two agents play automatically at adjustable speed (50ms to 1.5s per move)
-- **Configure agent strategies** — pick Aggressive, Positional, Defensive, or Random for each side
+- **59 classic endgame positions** — organized in 8 categories (basic, tactics, pawn, rook, queen, famous, complex, puzzles)
+- **Random endgame generator** — practice with procedurally generated positions
+- **Configure strategies** — pick Human, Aggressive, Positional, Defensive, or Random for each side
 - **Adjust search depth** — from depth 2 (fast, weak) to depth 6 (slow, strong)
 - **Auto-rematch** — agents play continuous matches, tracking wins/losses/draws across games
-- **Load puzzles** — paste any FEN string or pick preset positions (Scholar's Mate, Back Rank Mate, Fried Liver Attack)
+- **Load any position** — paste FEN strings or select from the endgame library
 - **Live evaluation bar** — shows which side the engine thinks is winning in real time
 - **Full match log** — records every game result with move counts and outcomes
 
@@ -74,7 +77,7 @@ AI-Chess-Solver/
 
 Open `index.html` in any modern browser. No build step, no dependencies, no server needed.
 
-Or visit the live deployment: [**vedag812.github.io/AI-Chess-Solver**](https://vedag812.github.io/AI-Chess-Solver/)
+Or visit the live deployment: [**ai-chess-solver-enhanced.vercel.app**](https://ai-chess-solver-enhanced-2ij6v33hk-ezcat207s-projects.vercel.app/)
 
 ## Tech
 
