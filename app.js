@@ -952,20 +952,38 @@
         btn.disabled = true;
         btn.innerHTML = `<span class="ctrl-icon">⏳</span> ${t('hintAnalyzing')}`;
 
-        // Use a slightly deeper search for hints
-        const hintAI = new ChessAI(game.turn === COLOR.WHITE ? whiteAI.maxDepth : blackAI.maxDepth,
-                                   game.turn === COLOR.WHITE ? whiteAI.strategy : blackAI.strategy);
-
         setTimeout(() => {
             const allMoves = game.generateLegalMoves();
-            const scoredMoves = [];
 
-            // Evaluate all moves
+            // 🚀 Phase 1: Quick static evaluation (fast screening)
+            const quickEval = [];
             for (const move of allMoves) {
                 game.makeMove(move);
-                const score = -hintAI.evaluate(game); // Negate because we evaluate from opponent's view
+                const quickScore = -evaluateQuick(game); // Simple eval
                 game.unmakeMove();
-                scoredMoves.push({ move, score, san: game.moveToSAN(move) });
+                quickEval.push({ move, quickScore, san: game.moveToSAN(move) });
+            }
+
+            // Sort and take top 5 candidates
+            quickEval.sort((a, b) => b.quickScore - a.quickScore);
+            const topCandidates = quickEval.slice(0, Math.min(5, quickEval.length));
+
+            // 🔍 Phase 2: Deep search on top candidates (accurate but slower)
+            const depth = Math.max(2, Math.min(3, (game.turn === COLOR.WHITE ? whiteAI.maxDepth : blackAI.maxDepth) - 1));
+            const hintAI = new ChessAI(depth, game.turn === COLOR.WHITE ? whiteAI.strategy : blackAI.strategy);
+
+            const scoredMoves = [];
+            for (const candidate of topCandidates) {
+                game.makeMove(candidate.move);
+                hintAI.nodesSearched = 0;
+                const deepScore = -hintAI.minimax(game, depth - 1, -Infinity, Infinity, false);
+                game.unmakeMove();
+                scoredMoves.push({
+                    move: candidate.move,
+                    score: deepScore,
+                    san: candidate.san,
+                    nodes: hintAI.nodesSearched
+                });
             }
 
             // Sort and get top 2
@@ -979,18 +997,22 @@
             btn.innerHTML = `<span class="ctrl-icon">💡</span> ${t('getHint')}`;
 
             // Show hint tooltip
-            const hintText = `${t('hintTop2')}\n1. ${hintMoves[0].san} (${(hintMoves[0].score / 100).toFixed(1)})\n2. ${hintMoves[1].san} (${(hintMoves[1].score / 100).toFixed(1)})`;
-
-            // Create tooltip
             const tooltip = document.createElement('div');
             tooltip.className = 'hint-tooltip';
             tooltip.innerHTML = `<div class="hint-title">${t('hintTop2')}</div>` +
                 `<div class="hint-move">1️⃣ ${hintMoves[0].san} <span class="hint-score">${(hintMoves[0].score / 100).toFixed(1)}</span></div>` +
-                `<div class="hint-move">2️⃣ ${hintMoves[1].san} <span class="hint-score">${(hintMoves[1].score / 100).toFixed(1)}</span></div>`;
+                `<div class="hint-move">2️⃣ ${hintMoves[1].san} <span class="hint-score">${(hintMoves[1].score / 100).toFixed(1)}</span></div>` +
+                `<div class="hint-info">${currentLang === 'zh' ? '搜索' : 'Searched'} ${scoredMoves[0].nodes.toLocaleString()} ${currentLang === 'zh' ? '节点' : 'nodes'}</div>`;
 
             document.body.appendChild(tooltip);
             setTimeout(() => tooltip.remove(), 5000);
         }, 100);
+    }
+
+    // Quick evaluation without deep search
+    function evaluateQuick(engine) {
+        const quickAI = new ChessAI(1, 'positional');
+        return quickAI.evaluate(engine);
     }
 
     // ===== GAME MODE SWITCHER =====
