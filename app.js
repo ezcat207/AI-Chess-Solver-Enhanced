@@ -952,61 +952,84 @@
         btn.disabled = true;
         btn.innerHTML = `<span class="ctrl-icon">⏳</span> ${t('hintAnalyzing')}`;
 
-        setTimeout(() => {
-            const allMoves = game.generateLegalMoves();
+        // Use requestAnimationFrame to ensure UI updates before heavy computation
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                try {
+                    console.log('🔍 AI Hint: Starting analysis...');
+                    const startTime = Date.now();
 
-            // 🚀 Phase 1: Quick static evaluation (fast screening)
-            const quickEval = [];
-            for (const move of allMoves) {
-                game.makeMove(move);
-                const quickScore = -evaluateQuick(game); // Simple eval
-                game.unmakeMove();
-                quickEval.push({ move, quickScore, san: game.moveToSAN(move) });
-            }
+                    const allMoves = game.generateLegalMoves();
+                    console.log(`📋 Found ${allMoves.length} legal moves`);
 
-            // Sort and take top 5 candidates
-            quickEval.sort((a, b) => b.quickScore - a.quickScore);
-            const topCandidates = quickEval.slice(0, Math.min(5, quickEval.length));
+                    // 🚀 Phase 1: Quick evaluation
+                    const quickEval = [];
+                    for (const move of allMoves) {
+                        const undo = game.makeMove(move);
+                        const quickScore = -evaluateQuick(game);
+                        game.unmakeMove(undo);
+                        quickEval.push({ move, quickScore, san: game.moveToSAN(move) });
+                    }
+                    console.log(`⚡ Phase 1 complete: ${Date.now() - startTime}ms`);
 
-            // 🔍 Phase 2: Deep search on top candidates (accurate but slower)
-            const depth = Math.max(2, Math.min(3, (game.turn === COLOR.WHITE ? whiteAI.maxDepth : blackAI.maxDepth) - 1));
-            const hintAI = new ChessAI(depth, game.turn === COLOR.WHITE ? whiteAI.strategy : blackAI.strategy);
+                    // Sort and take top 5 candidates
+                    quickEval.sort((a, b) => b.quickScore - a.quickScore);
+                    const topCandidates = quickEval.slice(0, Math.min(5, quickEval.length));
+                    console.log(`🎯 Top candidates: ${topCandidates.map(c => c.san).join(', ')}`);
 
-            const scoredMoves = [];
-            for (const candidate of topCandidates) {
-                game.makeMove(candidate.move);
-                hintAI.nodesSearched = 0;
-                const deepScore = -hintAI.minimax(game, depth - 1, -Infinity, Infinity, false);
-                game.unmakeMove();
-                scoredMoves.push({
-                    move: candidate.move,
-                    score: deepScore,
-                    san: candidate.san,
-                    nodes: hintAI.nodesSearched
-                });
-            }
+                    // 🔍 Phase 2: Shallow search (depth 2 only for speed)
+                    const searchDepth = 2;
+                    const hintAI = new ChessAI(searchDepth, game.turn === COLOR.WHITE ? whiteAI.strategy : blackAI.strategy);
 
-            // Sort and get top 2
-            scoredMoves.sort((a, b) => b.score - a.score);
-            hintMoves = scoredMoves.slice(0, 2);
-            showHints = true;
+                    const scoredMoves = [];
+                    for (let i = 0; i < topCandidates.length; i++) {
+                        const candidate = topCandidates[i];
+                        const undo = game.makeMove(candidate.move);
+                        hintAI.nodesSearched = 0;
+                        const deepScore = -hintAI.minimax(game, searchDepth - 1, -Infinity, Infinity, false);
+                        game.unmakeMove(undo);
+                        scoredMoves.push({
+                            move: candidate.move,
+                            score: deepScore,
+                            san: candidate.san,
+                            nodes: hintAI.nodesSearched
+                        });
+                        console.log(`  ${i+1}. ${candidate.san}: ${(deepScore/100).toFixed(2)} (${hintAI.nodesSearched} nodes)`);
+                    }
 
-            renderBoard(false);
+                    const totalTime = Date.now() - startTime;
+                    console.log(`✅ Phase 2 complete: ${totalTime}ms total`);
 
-            btn.disabled = false;
-            btn.innerHTML = `<span class="ctrl-icon">💡</span> ${t('getHint')}`;
+                    // Sort and get top 2
+                    scoredMoves.sort((a, b) => b.score - a.score);
+                    hintMoves = scoredMoves.slice(0, 2);
+                    showHints = true;
 
-            // Show hint tooltip
-            const tooltip = document.createElement('div');
-            tooltip.className = 'hint-tooltip';
-            tooltip.innerHTML = `<div class="hint-title">${t('hintTop2')}</div>` +
-                `<div class="hint-move">1️⃣ ${hintMoves[0].san} <span class="hint-score">${(hintMoves[0].score / 100).toFixed(1)}</span></div>` +
-                `<div class="hint-move">2️⃣ ${hintMoves[1].san} <span class="hint-score">${(hintMoves[1].score / 100).toFixed(1)}</span></div>` +
-                `<div class="hint-info">${currentLang === 'zh' ? '搜索' : 'Searched'} ${scoredMoves[0].nodes.toLocaleString()} ${currentLang === 'zh' ? '节点' : 'nodes'}</div>`;
+                    renderBoard(false);
 
-            document.body.appendChild(tooltip);
-            setTimeout(() => tooltip.remove(), 5000);
-        }, 100);
+                    btn.disabled = false;
+                    btn.innerHTML = `<span class="ctrl-icon">💡</span> ${t('getHint')}`;
+
+                    // Show hint tooltip
+                    const totalNodes = scoredMoves.reduce((sum, m) => sum + m.nodes, 0);
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'hint-tooltip';
+                    tooltip.innerHTML = `<div class="hint-title">${t('hintTop2')}</div>` +
+                        `<div class="hint-move">1️⃣ ${hintMoves[0].san} <span class="hint-score">${(hintMoves[0].score / 100).toFixed(1)}</span></div>` +
+                        `<div class="hint-move">2️⃣ ${hintMoves[1].san} <span class="hint-score">${(hintMoves[1].score / 100).toFixed(1)}</span></div>` +
+                        `<div class="hint-info">${currentLang === 'zh' ? '分析' : 'Analyzed'} ${allMoves.length} ${currentLang === 'zh' ? '步 • 搜索' : 'moves • '} ${totalNodes.toLocaleString()} ${currentLang === 'zh' ? '节点 •' : 'nodes •'} ${totalTime}ms</div>`;
+
+                    document.body.appendChild(tooltip);
+                    setTimeout(() => tooltip.remove(), 5000);
+
+                } catch (error) {
+                    console.error('❌ AI Hint error:', error);
+                    btn.disabled = false;
+                    btn.innerHTML = `<span class="ctrl-icon">💡</span> ${t('getHint')}`;
+                    alert('AI提示出错: ' + error.message);
+                }
+            });
+        });
     }
 
     // Quick evaluation without deep search
