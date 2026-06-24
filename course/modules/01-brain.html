@@ -1,0 +1,266 @@
+<section class="module" id="module-1" style="background: var(--color-bg);">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">The Chess Computer's Brain</h1>
+      <p class="module-subtitle">What happens in that split second when AI decides where to move?</p>
+    </header>
+
+    <!-- Screen 1: Opening Hook -->
+    <div class="screen animate-in">
+      <p>You're watching two AI agents play chess. Black just moved its queen. White pauses for half a second... then slides its knight to f3. Checkmate.</p>
+
+      <p>What happened in that half-second? Let's rewind and watch the thought process frame by frame.</p>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <div class="callout-content">
+          <span class="callout-title">Why This Matters</span>
+          <p>Understanding how chess AI "thinks" teaches you how to evaluate tradeoffs in any AI system — search depth vs speed, accuracy vs performance, exploration vs exploitation.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 2: The Move Decision Process -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Inside One Move Decision</h2>
+
+      <p>When it's White's turn, the <span class="term" data-definition="Minimax is a decision-making algorithm that assumes both players play perfectly. It explores possible moves by minimizing the maximum possible loss.">Minimax algorithm</span> springs into action. Here's what happens:</p>
+
+      <div class="step-cards stagger-children">
+        <div class="step-card animate-in">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Generate all legal moves</strong>
+            <p>The engine lists every possible move White can make right now — typically 20-40 options.</p>
+          </div>
+        </div>
+        <div class="step-card animate-in">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Sort moves by promise</strong>
+            <p>Captures and checks go first. This isn't random — good <span class="term" data-definition="Move ordering is sorting moves so the best ones are searched first, making Alpha-Beta pruning more effective.">move ordering</span> makes the search dramatically faster.</p>
+          </div>
+        </div>
+        <div class="step-card animate-in">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Look ahead 4 moves deep</strong>
+            <p>For each candidate move, simulate what happens if we play it, Black responds, we counter, Black counters again... that's 4 <span class="term" data-definition="Ply is a single move by one player. A move by White and Black's response is 2 ply. Depth 4 means looking 4 ply (2 full moves) ahead.">ply</span> deep.</p>
+          </div>
+        </div>
+        <div class="step-card animate-in">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Score each future position</strong>
+            <p>At the end of each branch, evaluate who's winning. Material, position, king safety — all factors get weighted and summed.</p>
+          </div>
+        </div>
+        <div class="step-card animate-in">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <strong>Pick the move with the best worst-case</strong>
+            <p>Minimax assumes Black plays perfectly. So we pick the move where even if Black responds optimally, we're still in the best position.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: Code Translation -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What This Looks Like in Code</h2>
+
+      <p>Here's the actual function that makes the decision. Left side: real code from the project. Right side: what it means in plain English.</p>
+
+      <div class="translation-block">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line"><span class="code-keyword">let</span> moves = engine.<span class="code-function">generateLegalMoves</span>();</span>
+<span class="code-line">moves = <span class="code-keyword">this</span>.<span class="code-function">orderMoves</span>(engine, moves);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">let</span> bestMove = moves[<span class="code-number">0</span>], bestScore = -<span class="code-keyword">Infinity</span>;</span>
+<span class="code-line"><span class="code-keyword">for</span> (<span class="code-keyword">const</span> m <span class="code-keyword">of</span> moves) {</span>
+<span class="code-line">  <span class="code-keyword">const</span> u = engine.<span class="code-function">makeMove</span>(m);</span>
+<span class="code-line">  <span class="code-keyword">const</span> s = -<span class="code-keyword">this</span>.<span class="code-function">minimax</span>(engine, depth - <span class="code-number">1</span>, -<span class="code-keyword">Infinity</span>, <span class="code-keyword">Infinity</span>, <span class="code-keyword">false</span>);</span>
+<span class="code-line">  engine.<span class="code-function">unmakeMove</span>(u);</span>
+<span class="code-line">  <span class="code-keyword">if</span> (s > bestScore) { bestScore = s; bestMove = m; }</span>
+<span class="code-line">}</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Get the full list of moves White can legally make right now.</p>
+            <p class="tl">Sort them so promising moves (captures, checks) get searched first.</p>
+            <p class="tl">Start with the first move as our default choice, and give it the worst possible score.</p>
+            <p class="tl">Loop through every candidate move one by one.</p>
+            <p class="tl">Temporarily make the move on the board (we'll undo it in a moment).</p>
+            <p class="tl">Look ahead and ask: if we play this, what's the best Black can respond with? The minus sign flips the perspective.</p>
+            <p class="tl">Undo the move — the board is back to its original state.</p>
+            <p class="tl">If this move scores better than what we've seen so far, remember it as the new best.</p>
+            <p class="tl">After testing all moves, return the one with the highest score.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">🎯</span>
+        <div class="callout-content">
+          <span class="callout-title">The Minus Sign Trick</span>
+          <p>Notice <code>-this.minimax(...)</code>? That's flipping the score because we're switching whose turn it is. What's good for Black is bad for White, so we multiply by -1. This is how Minimax handles turn-taking without writing separate "maximize" and "minimize" functions.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 4: Components Talking (Group Chat) -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Behind the Scenes: Who's Talking to Who?</h2>
+
+      <p>Let's visualize what's happening as messages between three parts of the system: the <strong>UI</strong> (what you see), the <strong>Engine</strong> (game rules), and the <strong>AI</strong> (decision maker).</p>
+
+      <div class="chat-window" id="chat-module1">
+        <div class="chat-messages">
+          <div class="chat-message" data-msg="0" data-sender="ui" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-1)">UI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-1)">UI</span>
+              <p>It's White's turn. AI, what move should we make?</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="1" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>Engine, give me all the legal moves from this position.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="2" data-sender="engine" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-3)">E</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-3)">Engine</span>
+              <p>Here are 34 legal moves: Knight to f3, Pawn to e4, Queen to d5...</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="3" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>Let me try Knight to f3. Engine, temporarily make that move.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="4" data-sender="engine" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-3)">E</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-3)">Engine</span>
+              <p>Done. Knight is now on f3. Black to move.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="5" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>Now simulate Black's best response... (searching 10,847 positions deep)</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="6" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>This move scores +2.4 (good for White). Engine, undo that move.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="7" data-sender="engine" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-3)">E</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-3)">Engine</span>
+              <p>Undone. Board is back to the starting position.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="8" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>After testing all 34 moves, Knight to f3 scores highest. UI, play that move.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="9" data-sender="ui" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-1)">UI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-1)">UI</span>
+              <p>Done! Knight slides to f3. Checkmate! White wins.</p>
+            </div>
+          </div>
+          <div class="chat-typing">
+            <div class="chat-avatar" style="background: var(--color-actor-1)">UI</div>
+            <div class="chat-typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-controls">
+          <button class="btn btn-primary chat-next-btn">Next Message</button>
+          <button class="btn chat-all-btn">Show All</button>
+          <button class="btn chat-reset-btn">Reset</button>
+          <span class="chat-progress"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 5: Quiz -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Check Your Understanding</h2>
+
+      <div class="quiz-container" id="quiz-module1">
+        <div class="quiz-question-block"
+             data-correct="option-b"
+             data-explanation-right="Exactly! The AI tests each move by actually playing it on the board, then undoes it. This is why the Engine needs the makeMove() and unmakeMove() functions — they let the AI explore futures without permanently changing the board."
+             data-explanation-wrong="Think about what happens in the code loop: the AI makes a move, scores it, then undoes it. The board needs to go back to its original state so the next move can be tested fairly.">
+          <h3 class="quiz-question">Why does the AI need to "undo" moves after testing them?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>To save memory</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>So the board returns to its original state for testing the next move</span>
+            </button>
+            <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>To make the game run faster</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-question-block"
+             data-correct="option-c"
+             data-explanation-right="Correct! Minimax explores thousands of positions per move. At depth 4 with 30 moves per position, that's potentially 30^4 = 810,000 positions. The actual number is lower thanks to pruning, but it's still a lot of searching happening in that half-second pause."
+             data-explanation-wrong="The AI isn't picking randomly or just looking at the current board. It's systematically exploring future possibilities by playing out full games in its head. Think about what 'depth 4' means — how many positions does that create?">
+          <h3 class="quiz-question">When White pauses for half a second before moving, what's actually happening?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>The AI is randomly waiting to seem more human</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>The engine is checking if the current position is legal</span>
+            </button>
+            <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>The AI is exploring thousands of possible future positions</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+
+        <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+        <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+      </div>
+    </div>
+
+  </div>
+</section>

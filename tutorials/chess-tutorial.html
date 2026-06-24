@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Chess Tutorial - Beginner to Advanced</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --light-square: #f0d9b5;
+            --dark-square: #b58863;
+            --hover-color: #52b788;
+            --text-color: #2c3e50;
+            --bg-color: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(44, 62, 80, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar h1 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 15px;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section h3 {
+            color: var(--secondary-color);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-left: 5px;
+        }
+
+        .nav-link {
+            display: block;
+            color: #bdc3c7;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-bottom: 5px;
+            font-size: 15px;
+        }
+
+        .nav-link:hover {
+            background: rgba(52, 152, 219, 0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 50px;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            color: white;
+            margin-bottom: 50px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease;
+        }
+
+        .hero p {
+            font-size: 20px;
+            opacity: 0.95;
+            animation: fadeInUp 1s ease;
+        }
+
+        /* Sections */
+        .section {
+            padding: 60px 0;
+            animation: fadeIn 1s ease;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-header h2 {
+            font-size: 42px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+
+        .section-header p {
+            font-size: 18px;
+            color: #7f8c8d;
+            max-width: 800px;
+            margin: 20px auto 0;
+        }
+
+        /* Chess Board */
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            gap: 0;
+            margin: 30px auto;
+            border: 4px solid var(--primary-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            width: fit-content;
+        }
+
+        .chess-square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .chess-square:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .chess-square.light {
+            background-color: var(--light-square);
+        }
+
+        .chess-square.dark {
+            background-color: var(--dark-square);
+        }
+
+        .chess-square.highlight {
+            background-color: var(--hover-color);
+            animation: pulse 1s infinite;
+        }
+
+        .chess-square.selected {
+            box-shadow: inset 0 0 0 3px var(--secondary-color);
+        }
+
+        /* Piece Movement Demo */
+        .piece-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .piece-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .piece-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            border-color: var(--secondary-color);
+        }
+
+        .piece-card h3 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .piece-icon {
+            font-size: 40px;
+        }
+
+        .piece-card p {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        .mini-board {
+            display: grid;
+            grid-template-columns: repeat(8, 30px);
+            grid-template-rows: repeat(8, 30px);
+            margin: 15px auto;
+            border: 2px solid var(--primary-color);
+            border-radius: 5px;
+            overflow: hidden;
+            width: fit-content;
+        }
+
+        .mini-square {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .mini-square.light {
+            background-color: var(--light-square);
+        }
+
+        .mini-square.dark {
+            background-color: var(--dark-square);
+        }
+
+        .mini-square.move {
+            background-color: rgba(82, 183, 136, 0.6);
+        }
+
+        .mini-square.piece-pos {
+            background-color: rgba(52, 152, 219, 0.6);
+        }
+
+        /* Content Cards */
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .content-card h3 {
+            color: var(--primary-color);
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        .content-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-card li {
+            padding: 10px 0 10px 30px;
+            position: relative;
+            color: #555;
+        }
+
+        .content-card li::before {
+            content: '♟';
+            position: absolute;
+            left: 0;
+            color: var(--secondary-color);
+            font-size: 20px;
+        }
+
+        /* Interactive Practice Board */
+        .practice-board {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 40px;
+            border-radius: 15px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .practice-board h3 {
+            color: var(--primary-color);
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .practice-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--success-color), #229954);
+            color: white;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-color), #c0392b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        /* Quiz Section */
+        .quiz-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-question {
+            margin-bottom: 30px;
+        }
+
+        .quiz-question h4 {
+            color: var(--primary-color);
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-option {
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--secondary-color);
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success-color);
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--accent-color);
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .quiz-result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .quiz-result.show {
+            animation: slideIn 0.5s ease;
+        }
+
+        /* Tactics Diagram */
+        .tactics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .tactic-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .tactic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .tactic-card h4 {
+            color: var(--primary-color);
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .tactic-description {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #ecf0f1;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary-color), var(--success-color));
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .chess-board {
+                grid-template-columns: repeat(8, 40px);
+                grid-template-rows: repeat(8, 40px);
+            }
+
+            .chess-square {
+                width: 40px;
+                height: 40px;
+                font-size: 28px;
+            }
+
+            .section-header h2 {
+                font-size: 32px;
+            }
+        }
+
+        /* Level Badges */
+        .level-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .level-beginner {
+            background: linear-gradient(135deg, #52b788, #40916c);
+            color: white;
+        }
+
+        .level-intermediate {
+            background: linear-gradient(135deg, #f77f00, #d62828);
+            color: white;
+        }
+
+        .level-advanced {
+            background: linear-gradient(135deg, #6a4c93, #b5179e);
+            color: white;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Message Box */
+        .message-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 16px;
+            display: none;
+        }
+
+        .message-box.info {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid var(--secondary-color);
+            color: var(--secondary-color);
+        }
+
+        .message-box.success {
+            background: rgba(39, 174, 96, 0.1);
+            border-left: 4px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .message-box.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <h1>♔ Chess Tutorial</h1>
+
+            <div class="nav-section">
+                <h3>Getting Started</h3>
+                <a href="#hero" class="nav-link active">Home</a>
+                <a href="#introduction" class="nav-link">Introduction</a>
+            </div>
+
+            <div class="nav-section">
+                <h3>Beginner Level</h3>
+                <a href="#beginner" class="nav-link">Overview</a>
+                <a href="#board-setup" class="nav-link">Board Setup</a>
+                <a href="#pieces" class="nav-link">Piece Movements</a>
+                <a href="#special-moves" class="nav-link">Special Moves</a>
+                <a href="#check-checkmate" class="nav-link">Check & Checkmate</a>
+                <a href="#beginner-quiz" class="nav-link">Beginner Quiz</a>
+            </div>
+
+            <div class="nav-section">
+                <h3>Intermediate Level</h3>
+                <a href="#intermediate" class="nav-link">Overview</a>
+                <a href="#opening-principles" class="nav-link">Opening Principles</a>
+                <a href="#tactics" class="nav-link">Tactical Patterns</a>
+                <a href="#endgame-basics" class="nav-link">Basic Endgames</a>
+                <a href="#intermediate-quiz" class="nav-link">Intermediate Quiz</a>
+            </div>
+
+            <div class="nav-section">
+                <h3>Advanced Level</h3>
+                <a href="#advanced" class="nav-link">Overview</a>
+                <a href="#strategy" class="nav-link">Strategic Concepts</a>
+                <a href="#openings" class="nav-link">Opening Theory</a>
+                <a href="#advanced-tactics" class="nav-link">Advanced Tactics</a>
+                <a href="#advanced-quiz" class="nav-link">Advanced Quiz</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Hero Section -->
+            <section id="hero" class="hero">
+                <h1>♔ Master Chess: From Beginner to Grandmaster</h1>
+                <p>An interactive journey through the beautiful game of chess</p>
+            </section>
+
+            <!-- Introduction -->
+            <section id="introduction" class="section">
+                <div class="section-header">
+                    <h2>Welcome to Chess</h2>
+                    <p>Chess is a timeless strategy game that has captivated minds for over 1,500 years. This interactive tutorial will guide you from learning the basic rules to mastering advanced strategies.</p>
+                </div>
+
+                <div class="progress-section">
+                    <h3>Your Learning Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="overallProgress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BEGINNER LEVEL -->
+            <section id="beginner" class="section">
+                <div class="section-header">
+                    <span class="level-badge level-beginner">Beginner Level</span>
+                    <h2>Learn the Fundamentals</h2>
+                    <p>Master the basic rules, piece movements, and essential concepts of chess</p>
+                </div>
+            </section>
+
+            <!-- Board Setup -->
+            <section id="board-setup" class="section">
+                <div class="content-card">
+                    <h3>♟ The Chess Board</h3>
+                    <p>The chess board consists of 64 squares arranged in an 8x8 grid. The squares alternate between light and dark colors. Remember: "White on right" - the bottom-right square should always be a light square.</p>
+
+                    <div class="practice-board">
+                        <h3>Standard Chess Board Setup</h3>
+                        <div class="chess-board" id="setupBoard"></div>
+                        <div class="practice-controls">
+                            <button class="btn btn-primary" onclick="resetBoard()">Reset Board</button>
+                            <button class="btn btn-secondary" onclick="highlightFiles()">Show Files (a-h)</button>
+                            <button class="btn btn-secondary" onclick="highlightRanks()">Show Ranks (1-8)</button>
+                        </div>
+                    </div>
+
+                    <ul>
+                        <li><strong>Files:</strong> The vertical columns labeled a-h</li>
+                        <li><strong>Ranks:</strong> The horizontal rows labeled 1-8</li>
+                        <li><strong>Diagonals:</strong> Lines of same-colored squares</li>
+                        <li><strong>Starting Position:</strong> Each player begins with 16 pieces</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Piece Movements -->
+            <section id="pieces" class="section">
+                <div class="content-card">
+                    <h3>♔ How Chess Pieces Move</h3>
+                    <p>Each piece has its own unique way of moving. Click on any piece below to see its movement pattern.</p>
+                </div>
+
+                <div class="piece-demo">
+                    <div class="piece-card" onclick="showPieceMovement('pawn')">
+                        <h3><span class="piece-icon">♟</span> Pawn</h3>
+                        <p><strong>Value:</strong> 1 point</p>
+                        <p>Moves forward one square (or two on first move). Captures diagonally forward.</p>
+                        <div class="mini-board" id="pawn-board"></div>
+                    </div>
+
+                    <div class="piece-card" onclick="showPieceMovement('knight')">
+                        <h3><span class="piece-icon">♞</span> Knight</h3>
+                        <p><strong>Value:</strong> 3 points</p>
+                        <p>Moves in an "L" shape: two squares in one direction, then one square perpendicular. Can jump over pieces.</p>
+                        <div class="mini-board" id="knight-board"></div>
+                    </div>
+
+                    <div class="piece-card" onclick="showPieceMovement('bishop')">
+                        <h3><span class="piece-icon">♝</span> Bishop</h3>
+                        <p><strong>Value:</strong> 3 points</p>
+                        <p>Moves diagonally any number of squares. Each bishop stays on its starting color.</p>
+                        <div class="mini-board" id="bishop-board"></div>
+                    </div>
+
+                    <div class="piece-card" onclick="showPieceMovement('rook')">
+                        <h3><span class="piece-icon">♜</span> Rook</h3>
+                        <p><strong>Value:</strong> 5 points</p>
+                        <p>Moves horizontally or vertically any number of squares.</p>
+                        <div class="mini-board" id="rook-board"></div>
+                    </div>
+
+                    <div class="piece-card" onclick="showPieceMovement('queen')">
+                        <h3><span class="piece-icon">♛</span> Queen</h3>
+                        <p><strong>Value:</strong> 9 points</p>
+                        <p>The most powerful piece. Moves any number of squares horizontally, vertically, or diagonally.</p>
+                        <div class="mini-board" id="queen-board"></div>
+                    </div>
+
+                    <div class="piece-card" onclick="showPieceMovement('king')">
+                        <h3><span class="piece-icon">♚</span> King</h3>
+                        <p><strong>Value:</strong> Infinite</p>
+                        <p>Moves one square in any direction. The most important piece - losing it means losing the game!</p>
+                        <div class="mini-board" id="king-board"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Special Moves -->
+            <section id="special-moves" class="section">
+                <div class="content-card">
+                    <h3>✨ Special Moves</h3>
+                    <p>Chess has several special moves that add strategic depth to the game.</p>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">🏰 Castling</h4>
+                        <p>A special move involving the king and rook. The king moves two squares toward the rook, and the rook jumps over to the other side of the king.</p>
+                        <ul>
+                            <li>Can only castle if neither piece has moved</li>
+                            <li>Cannot castle through check</li>
+                            <li>No pieces between king and rook</li>
+                            <li>Kingside castling: O-O (short)</li>
+                            <li>Queenside castling: O-O-O (long)</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">👻 En Passant</h4>
+                        <p>A special pawn capture. If an opponent's pawn moves two squares forward from its starting position and lands beside your pawn, you can capture it as if it had only moved one square.</p>
+                        <ul>
+                            <li>Must be done immediately on the next move</li>
+                            <li>Only available for pawns</li>
+                            <li>Rare but important to know</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">👑 Pawn Promotion</h4>
+                        <p>When a pawn reaches the opposite end of the board (8th rank for white, 1st rank for black), it must be promoted to a queen, rook, bishop, or knight.</p>
+                        <ul>
+                            <li>Almost always promoted to a queen</li>
+                            <li>Can promote to any piece except a king</li>
+                            <li>Can have multiple queens</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Check and Checkmate -->
+            <section id="check-checkmate" class="section">
+                <div class="content-card">
+                    <h3>⚔️ Check, Checkmate, and Stalemate</h3>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Check</h4>
+                        <p>When the king is under attack (in check), you must:</p>
+                        <ul>
+                            <li>Move the king to a safe square</li>
+                            <li>Block the attack with another piece</li>
+                            <li>Capture the attacking piece</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Checkmate</h4>
+                        <p>When the king is in check and has no legal moves to escape. This ends the game!</p>
+                        <ul>
+                            <li>The ultimate goal of chess</li>
+                            <li>The attacking player wins</li>
+                            <li>Most common mate patterns: back rank mate, smothered mate, two rook mate</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Stalemate</h4>
+                        <p>When a player has no legal moves but is NOT in check. The game is a draw.</p>
+                        <ul>
+                            <li>Results in a tie</li>
+                            <li>Often an escape tactic for the losing side</li>
+                            <li>Be careful when you have a winning position!</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="practice-board">
+                    <h3>Interactive Practice: Find Checkmate</h3>
+                    <p>White to move and checkmate in one!</p>
+                    <div class="chess-board" id="mateBoard"></div>
+                    <div class="message-box" id="mateMessage"></div>
+                    <div class="practice-controls">
+                        <button class="btn btn-primary" onclick="resetMatePuzzle()">Reset Puzzle</button>
+                        <button class="btn btn-secondary" onclick="showHint()">Show Hint</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Beginner Quiz -->
+            <section id="beginner-quiz" class="section">
+                <div class="quiz-container">
+                    <h3>🎯 Beginner Level Quiz</h3>
+                    <p>Test your knowledge of the basics!</p>
+
+                    <div class="quiz-question">
+                        <h4>1. How many squares are on a chess board?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">32</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">48</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">64</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">81</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4>2. Which piece is the most powerful?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Rook</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">Queen</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Bishop</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Knight</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4>3. Which piece can jump over other pieces?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Bishop</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">Knight</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Queen</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Pawn</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4>4. What happens when a pawn reaches the other end of the board?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Nothing special</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">It promotes to another piece</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">It is removed from the board</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">It becomes a king</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-result" id="beginnerResult"></div>
+                </div>
+            </section>
+
+            <!-- INTERMEDIATE LEVEL -->
+            <section id="intermediate" class="section">
+                <div class="section-header">
+                    <span class="level-badge level-intermediate">Intermediate Level</span>
+                    <h2>Develop Your Skills</h2>
+                    <p>Learn opening principles, tactical patterns, and basic endgame techniques</p>
+                </div>
+            </section>
+
+            <!-- Opening Principles -->
+            <section id="opening-principles" class="section">
+                <div class="content-card">
+                    <h3>🎪 Opening Principles</h3>
+                    <p>The opening phase sets the foundation for your entire game. Follow these key principles:</p>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">1. Control the Center</h4>
+                        <p>The four central squares (e4, e5, d4, d5) are the most important on the board.</p>
+                        <ul>
+                            <li>Place pawns on e4/e5 or d4/d5</li>
+                            <li>Control center with pieces</li>
+                            <li>Restricts opponent's options</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">2. Develop Your Pieces</h4>
+                        <p>Get your pieces off the back rank and into active positions.</p>
+                        <ul>
+                            <li>Knights before bishops typically</li>
+                            <li>Don't move the same piece twice in opening</li>
+                            <li>Develop with purpose</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">3. Castle Early</h4>
+                        <p>Protect your king and connect your rooks.</p>
+                        <ul>
+                            <li>Usually castle kingside (shorter, safer)</li>
+                            <li>Castle within first 10 moves typically</li>
+                            <li>Don't delay king safety</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">4. Don't Bring Queen Out Too Early</h4>
+                        <p>Your queen can become a target if developed prematurely.</p>
+                        <ul>
+                            <li>Opponent can gain tempo by attacking it</li>
+                            <li>Develop minor pieces first</li>
+                            <li>Queen is best used mid-game</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tactics -->
+            <section id="tactics" class="section">
+                <div class="content-card">
+                    <h3>⚡ Tactical Patterns</h3>
+                    <p>Tactics are short-term opportunities to gain material or position. Mastering these patterns is crucial!</p>
+                </div>
+
+                <div class="tactics-grid">
+                    <div class="tactic-card">
+                        <h4>🍴 Fork</h4>
+                        <div class="tactic-description">
+                            A single piece attacks two or more opponent pieces simultaneously. Knights are especially good at forks!
+                        </div>
+                        <div class="mini-board" id="fork-board"></div>
+                        <button class="btn btn-primary" onclick="showTactic('fork')" style="margin-top: 15px; width: 100%;">Show Example</button>
+                    </div>
+
+                    <div class="tactic-card">
+                        <h4>📌 Pin</h4>
+                        <div class="tactic-description">
+                            A piece is pinned when moving it would expose a more valuable piece behind it. Bishops and rooks create pins.
+                        </div>
+                        <div class="mini-board" id="pin-board"></div>
+                        <button class="btn btn-primary" onclick="showTactic('pin')" style="margin-top: 15px; width: 100%;">Show Example</button>
+                    </div>
+
+                    <div class="tactic-card">
+                        <h4>🗡️ Skewer</h4>
+                        <div class="tactic-description">
+                            The reverse of a pin: a valuable piece is forced to move, exposing a less valuable piece behind it.
+                        </div>
+                        <div class="mini-board" id="skewer-board"></div>
+                        <button class="btn btn-primary" onclick="showTactic('skewer')" style="margin-top: 15px; width: 100%;">Show Example</button>
+                    </div>
+
+                    <div class="tactic-card">
+                        <h4>🎯 Discovered Attack</h4>
+                        <div class="tactic-description">
+                            Moving one piece reveals an attack from a piece behind it. Often devastating!
+                        </div>
+                        <div class="mini-board" id="discovered-board"></div>
+                        <button class="btn btn-primary" onclick="showTactic('discovered')" style="margin-top: 15px; width: 100%;">Show Example</button>
+                    </div>
+
+                    <div class="tactic-card">
+                        <h4>⚔️ Double Attack</h4>
+                        <div class="tactic-description">
+                            One piece attacks two targets at once. Similar to a fork but includes checks.
+                        </div>
+                        <div class="mini-board" id="double-attack-board"></div>
+                        <button class="btn btn-primary" onclick="showTactic('double-attack')" style="margin-top: 15px; width: 100%;">Show Example</button>
+                    </div>
+
+                    <div class="tactic-card">
+                        <h4>💎 Removing the Defender</h4>
+                        <div class="tactic-description">
+                            Capture or deflect a piece that's defending a key square or piece.
+                        </div>
+                        <div class="mini-board" id="defender-board"></div>
+                        <button class="btn btn-primary" onclick="showTactic('defender')" style="margin-top: 15px; width: 100%;">Show Example</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Endgame Basics -->
+            <section id="endgame-basics" class="section">
+                <div class="content-card">
+                    <h3>🏁 Basic Endgames</h3>
+                    <p>The endgame begins when most pieces are traded off. Master these fundamental checkmates:</p>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">King and Queen vs King</h4>
+                        <ul>
+                            <li>Use your queen to restrict the enemy king</li>
+                            <li>Drive the king to the edge of the board</li>
+                            <li>Bring your king up to help deliver mate</li>
+                            <li>Be careful not to create stalemate!</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">King and Rook vs King</h4>
+                        <ul>
+                            <li>Similar to queen mate but slower</li>
+                            <li>Cut off the enemy king with your rook</li>
+                            <li>Use the "box" method to push king to edge</li>
+                            <li>Deliver mate on the back rank</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">King and Two Rooks vs King</h4>
+                        <ul>
+                            <li>Easiest checkmate to execute</li>
+                            <li>Use rooks to create a "ladder"</li>
+                            <li>Push king to the edge systematically</li>
+                            <li>Deliver checkmate on the 1st or 8th rank</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Pawn Endgames</h4>
+                        <ul>
+                            <li><strong>Opposition:</strong> Kings facing each other with one square between</li>
+                            <li><strong>Passed Pawns:</strong> Pawns with no enemy pawns blocking them</li>
+                            <li><strong>Rule of the Square:</strong> Can the king catch the pawn?</li>
+                            <li><strong>Key Squares:</strong> Critical squares for pawn promotion</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Intermediate Quiz -->
+            <section id="intermediate-quiz" class="section">
+                <div class="quiz-container">
+                    <h3>🎯 Intermediate Level Quiz</h3>
+                    <p>Test your tactical and strategic knowledge!</p>
+
+                    <div class="quiz-question">
+                        <h4>1. What is the most important principle in the opening?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Attack immediately</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">Control the center</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Develop the queen</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Move all pawns</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4>2. What is a fork?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">A piece blocking the king</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">One piece attacking two pieces</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">A pawn structure</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">An opening strategy</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4>3. When should you typically castle?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">As late as possible</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">After developing the queen</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">Early, within first 10 moves</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Only when in check</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4>4. What is opposition in pawn endgames?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">Kings facing each other with one square between</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Pawns blocking each other</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">A tactical pattern</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">An opening principle</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-result" id="intermediateResult"></div>
+                </div>
+            </section>
+
+            <!-- ADVANCED LEVEL -->
+            <section id="advanced" class="section">
+                <div class="section-header">
+                    <span class="level-badge level-advanced">Advanced Level</span>
+                    <h2>Master the Game</h2>
+                    <p>Deep strategy, advanced tactics, and opening theory for serious players</p>
+                </div>
+            </section>
+
+            <!-- Strategy -->
+            <section id="strategy" class="section">
+                <div class="content-card">
+                    <h3>🎓 Strategic Concepts</h3>
+                    <p>Strategy is long-term planning. Understanding these concepts separates good players from great ones.</p>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Pawn Structure</h4>
+                        <ul>
+                            <li><strong>Isolated Pawns:</strong> No pawns on adjacent files - weak but create open files</li>
+                            <li><strong>Doubled Pawns:</strong> Two pawns on same file - usually weak</li>
+                            <li><strong>Passed Pawns:</strong> No enemy pawns can stop them - very strong</li>
+                            <li><strong>Pawn Chains:</strong> Diagonal pawn formations - attack the base</li>
+                            <li><strong>Backward Pawns:</strong> Behind friendly pawns, cannot advance safely</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Piece Coordination</h4>
+                        <ul>
+                            <li>Pieces should work together, not independently</li>
+                            <li>Rooks on open files and 7th rank are powerful</li>
+                            <li>Knights need outposts (protected squares in enemy territory)</li>
+                            <li>Bishops work best on open diagonals</li>
+                            <li>Queen combines best with other pieces</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Space Advantage</h4>
+                        <ul>
+                            <li>Control more squares, especially in the center</li>
+                            <li>Restrict opponent's piece mobility</li>
+                            <li>Advance pawns to gain space</li>
+                            <li>Don't overextend - maintain pawn structure</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Weak Squares</h4>
+                        <ul>
+                            <li>Squares that cannot be defended by pawns</li>
+                            <li>Holes in pawn structure</li>
+                            <li>Place pieces on opponent's weak squares</li>
+                            <li>Prevent opponent from occupying yours</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">King Safety</h4>
+                        <ul>
+                            <li>Keep pawns in front of castled king intact</li>
+                            <li>Be aware of attacking patterns against your king</li>
+                            <li>Sacrifice material if it leads to checkmate</li>
+                            <li>In endgame, activate your king!</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Opening Theory -->
+            <section id="openings" class="section">
+                <div class="content-card">
+                    <h3>📚 Famous Opening Lines</h3>
+                    <p>Study these classic openings to build a solid repertoire:</p>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">1. e4 Openings (King's Pawn)</h4>
+                        <ul>
+                            <li><strong>Italian Game:</strong> 1.e4 e5 2.Nf3 Nc6 3.Bc4 - Solid development</li>
+                            <li><strong>Ruy Lopez:</strong> 1.e4 e5 2.Nf3 Nc6 3.Bb5 - The "Spanish torture"</li>
+                            <li><strong>Sicilian Defense:</strong> 1.e4 c5 - Most popular defense to e4</li>
+                            <li><strong>French Defense:</strong> 1.e4 e6 - Solid but cramped structure</li>
+                            <li><strong>Caro-Kann:</strong> 1.e4 c6 - Solid and reliable</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">1. d4 Openings (Queen's Pawn)</h4>
+                        <ul>
+                            <li><strong>Queen's Gambit:</strong> 1.d4 d5 2.c4 - Not really a gambit!</li>
+                            <li><strong>King's Indian Defense:</strong> 1.d4 Nf6 2.c4 g6 - Sharp and dynamic</li>
+                            <li><strong>Nimzo-Indian Defense:</strong> 1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 - Pin the knight</li>
+                            <li><strong>Grunfeld Defense:</strong> 1.d4 Nf6 2.c4 g6 3.Nc3 d5 - Counter-attack center</li>
+                            <li><strong>London System:</strong> 1.d4 with Bf4 - Solid system opening</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Flank Openings</h4>
+                        <ul>
+                            <li><strong>English Opening:</strong> 1.c4 - Flexible and transpositional</li>
+                            <li><strong>Reti Opening:</strong> 1.Nf3 - Hypermodern approach</li>
+                            <li><strong>King's Indian Attack:</strong> Setup with g3, Bg2, d3, Nbd2</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Advanced Tactics -->
+            <section id="advanced-tactics" class="section">
+                <div class="content-card">
+                    <h3>⚡ Advanced Tactical Motifs</h3>
+                    <p>Complex tactical patterns that win games at high levels:</p>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Zwischenzug (In-Between Move)</h4>
+                        <p>An unexpected intermediate move that changes the expected sequence, often winning material or improving position.</p>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Deflection</h4>
+                        <p>Force a piece to leave its defensive post, usually by offering a sacrifice that must be accepted.</p>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Decoy</h4>
+                        <p>Lure an opponent's piece to a bad square where it can be trapped or creates other weaknesses.</p>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Interference</h4>
+                        <p>Place a piece on a square that disrupts the coordination between two enemy pieces.</p>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Clearance</h4>
+                        <p>Remove a piece from a square so another piece can occupy it with greater effect, often with tempo.</p>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">X-Ray Attack</h4>
+                        <p>An attack through an opponent's piece, similar to a skewer but more subtle and can be defended.</p>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--secondary-color); margin-bottom: 15px;">Windmill</h4>
+                        <p>A devastating tactic where a piece gives discovered check repeatedly while capturing material.</p>
+                    </div>
+                </div>
+
+                <div class="content-card" style="margin-top: 30px;">
+                    <h3>🧠 Calculation and Visualization</h3>
+                    <p>Skills that separate masters from beginners:</p>
+
+                    <ul>
+                        <li><strong>Calculate Forcing Moves First:</strong> Checks, captures, and threats</li>
+                        <li><strong>Look for Candidate Moves:</strong> Identify 3-4 promising moves before deep calculation</li>
+                        <li><strong>Calculate Both Sides:</strong> Always consider opponent's best response</li>
+                        <li><strong>Visualization Training:</strong> Practice playing blindfold or with covered board</li>
+                        <li><strong>Pattern Recognition:</strong> Study master games to recognize common patterns</li>
+                        <li><strong>Time Management:</strong> Spend more time on critical positions</li>
+                        <li><strong>Eliminate Blunders:</strong> Always check for hanging pieces before moving</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Advanced Quiz -->
+            <section id="advanced-quiz" class="section">
+                <div class="quiz-container">
+                    <h3>🎯 Advanced Level Quiz</h3>
+                    <p>Challenge yourself with these advanced concepts!</p>
+
+                    <div class="quiz-question">
+                        <h4>1. What is a zwischenzug?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">A type of endgame</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">An in-between move</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">A pawn structure</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">An opening variation</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4>2. What is generally considered the strongest pawn feature?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Doubled pawns</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Isolated pawns</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">Passed pawns</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Backward pawns</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4>3. Which opening starts with 1.e4 c5?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">French Defense</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Caro-Kann</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">Sicilian Defense</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Italian Game</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4>4. What is the typical value of controlling the 7th rank with a rook?</h4>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Minimal advantage</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, true)">Significant advantage - attacks pawns and restricts king</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Only useful in endgames</div>
+                            <div class="quiz-option" onclick="checkAnswer(this, false)">Less important than center control</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-result" id="advancedResult"></div>
+                </div>
+            </section>
+
+            <!-- Final Section -->
+            <section class="section" style="text-align: center; padding: 80px 20px;">
+                <h2 style="font-size: 42px; color: var(--primary-color); margin-bottom: 20px;">Congratulations!</h2>
+                <p style="font-size: 20px; color: #7f8c8d; max-width: 600px; margin: 0 auto 30px;">
+                    You've completed the comprehensive chess tutorial. Keep practicing, study master games, and most importantly - enjoy the beautiful game of chess!
+                </p>
+                <div class="practice-controls">
+                    <button class="btn btn-primary" onclick="scrollToTop()">Start Over</button>
+                    <button class="btn btn-secondary" onclick="window.print()">Print Tutorial</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Initialize boards and functionality
+        let selectedSquare = null;
+        let quizScores = { beginner: 0, intermediate: 0, advanced: 0 };
+        let questionsAnswered = { beginner: 0, intermediate: 0, advanced: 0 };
+
+        // Chess pieces using Unicode characters
+        const pieces = {
+            white: {
+                king: '♔',
+                queen: '♕',
+                rook: '♖',
+                bishop: '♗',
+                knight: '♘',
+                pawn: '♙'
+            },
+            black: {
+                king: '♚',
+                queen: '♛',
+                rook: '♜',
+                bishop: '♝',
+                knight: '♞',
+                pawn: '♟'
+            }
+        };
+
+        // Initial board setup
+        const initialPosition = [
+            ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
+            ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
+            ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
+        ];
+
+        // Create chess board
+        function createBoard(boardId, position) {
+            const board = document.getElementById(boardId);
+            if (!board) return;
+
+            board.innerHTML = '';
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = 'chess-square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+
+                    if (position && position[row] && position[row][col]) {
+                        square.textContent = position[row][col];
+                    }
+
+                    board.appendChild(square);
+                }
+            }
+        }
+
+        // Create mini board
+        function createMiniBoard(boardId, piecePosition = null, moveSquares = []) {
+            const board = document.getElementById(boardId);
+            if (!board) return;
+
+            board.innerHTML = '';
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = 'mini-square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+
+                    // Check if this is the piece position
+                    if (piecePosition && piecePosition.row === row && piecePosition.col === col) {
+                        square.classList.add('piece-pos');
+                        square.textContent = piecePosition.piece;
+                    }
+
+                    // Check if this is a valid move square
+                    if (moveSquares.some(m => m.row === row && m.col === col)) {
+                        square.classList.add('move');
+                    }
+
+                    board.appendChild(square);
+                }
+            }
+        }
+
+        // Show piece movements
+        function showPieceMovement(pieceName) {
+            const movePatterns = {
+                pawn: {
+                    piece: '♟',
+                    position: { row: 6, col: 4 },
+                    moves: [
+                        { row: 5, col: 4 }, { row: 4, col: 4 }, // forward moves
+                        { row: 5, col: 3 }, { row: 5, col: 5 }  // capture diagonals
+                    ]
+                },
+                knight: {
+                    piece: '♞',
+                    position: { row: 4, col: 4 },
+                    moves: [
+                        { row: 2, col: 3 }, { row: 2, col: 5 },
+                        { row: 3, col: 2 }, { row: 3, col: 6 },
+                        { row: 5, col: 2 }, { row: 5, col: 6 },
+                        { row: 6, col: 3 }, { row: 6, col: 5 }
+                    ]
+                },
+                bishop: {
+                    piece: '♝',
+                    position: { row: 4, col: 4 },
+                    moves: [
+                        { row: 0, col: 0 }, { row: 1, col: 1 }, { row: 2, col: 2 }, { row: 3, col: 3 },
+                        { row: 5, col: 5 }, { row: 6, col: 6 }, { row: 7, col: 7 },
+                        { row: 1, col: 7 }, { row: 2, col: 6 }, { row: 3, col: 5 },
+                        { row: 5, col: 3 }, { row: 6, col: 2 }, { row: 7, col: 1 }
+                    ]
+                },
+                rook: {
+                    piece: '♜',
+                    position: { row: 4, col: 4 },
+                    moves: [
+                        { row: 0, col: 4 }, { row: 1, col: 4 }, { row: 2, col: 4 }, { row: 3, col: 4 },
+                        { row: 5, col: 4 }, { row: 6, col: 4 }, { row: 7, col: 4 },
+                        { row: 4, col: 0 }, { row: 4, col: 1 }, { row: 4, col: 2 }, { row: 4, col: 3 },
+                        { row: 4, col: 5 }, { row: 4, col: 6 }, { row: 4, col: 7 }
+                    ]
+                },
+                queen: {
+                    piece: '♛',
+                    position: { row: 4, col: 4 },
+                    moves: [
+                        // Horizontal and vertical
+                        { row: 0, col: 4 }, { row: 1, col: 4 }, { row: 2, col: 4 }, { row: 3, col: 4 },
+                        { row: 5, col: 4 }, { row: 6, col: 4 }, { row: 7, col: 4 },
+                        { row: 4, col: 0 }, { row: 4, col: 1 }, { row: 4, col: 2 }, { row: 4, col: 3 },
+                        { row: 4, col: 5 }, { row: 4, col: 6 }, { row: 4, col: 7 },
+                        // Diagonals
+                        { row: 0, col: 0 }, { row: 1, col: 1 }, { row: 2, col: 2 }, { row: 3, col: 3 },
+                        { row: 5, col: 5 }, { row: 6, col: 6 }, { row: 7, col: 7 },
+                        { row: 1, col: 7 }, { row: 2, col: 6 }, { row: 3, col: 5 },
+                        { row: 5, col: 3 }, { row: 6, col: 2 }, { row: 7, col: 1 }
+                    ]
+                },
+                king: {
+                    piece: '♚',
+                    position: { row: 4, col: 4 },
+                    moves: [
+                        { row: 3, col: 3 }, { row: 3, col: 4 }, { row: 3, col: 5 },
+                        { row: 4, col: 3 }, { row: 4, col: 5 },
+                        { row: 5, col: 3 }, { row: 5, col: 4 }, { row: 5, col: 5 }
+                    ]
+                }
+            };
+
+            const pattern = movePatterns[pieceName];
+            if (pattern) {
+                createMiniBoard(pieceName + '-board', pattern.position, pattern.moves);
+            }
+        }
+
+        // Show tactical patterns
+        function showTactic(tacticName) {
+            const tacticPatterns = {
+                fork: {
+                    position: [
+                        ['', '', '', '', '♚', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '♜', ''],
+                        ['', '', '', '♘', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '♔', '', '', '', '']
+                    ],
+                    board: 'fork-board'
+                },
+                pin: {
+                    position: [
+                        ['', '', '', '', '♚', '', '', ''],
+                        ['', '', '', '', '♞', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '♗', '', '', ''],
+                        ['', '', '', '', '', '', '', '']
+                    ],
+                    board: 'pin-board'
+                },
+                skewer: {
+                    position: [
+                        ['', '', '', '', '♚', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '♛', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '♖', '', '', ''],
+                        ['', '', '', '', '', '', '', '']
+                    ],
+                    board: 'skewer-board'
+                },
+                discovered: {
+                    position: [
+                        ['', '', '', '', '♚', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '♞', '', '', '', ''],
+                        ['', '', '', '♗', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', '']
+                    ],
+                    board: 'discovered-board'
+                },
+                'double-attack': {
+                    position: [
+                        ['', '', '', '', '♚', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '♛', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '♜', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', '']
+                    ],
+                    board: 'double-attack-board'
+                },
+                defender: {
+                    position: [
+                        ['', '', '', '', '♚', '', '', ''],
+                        ['', '', '', '', '♞', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '♗', '', '', ''],
+                        ['', '', '', '', '♙', '', '', ''],
+                        ['', '', '', '', '', '', '', '']
+                    ],
+                    board: 'defender-board'
+                }
+            };
+
+            const tactic = tacticPatterns[tacticName];
+            if (tactic) {
+                createMiniBoard(tactic.board, null, []);
+                // Delay to show the pattern
+                setTimeout(() => {
+                    const board = document.getElementById(tactic.board);
+                    board.innerHTML = '';
+                    for (let row = 0; row < 8; row++) {
+                        for (let col = 0; col < 8; col++) {
+                            const square = document.createElement('div');
+                            square.className = 'mini-square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+                            if (tactic.position[row][col]) {
+                                square.textContent = tactic.position[row][col];
+                            }
+                            board.appendChild(square);
+                        }
+                    }
+                }, 100);
+            }
+        }
+
+        // Initialize all mini boards
+        function initializeMiniBoards() {
+            showPieceMovement('pawn');
+            showPieceMovement('knight');
+            showPieceMovement('bishop');
+            showPieceMovement('rook');
+            showPieceMovement('queen');
+            showPieceMovement('king');
+
+            showTactic('fork');
+            showTactic('pin');
+            showTactic('skewer');
+            showTactic('discovered');
+            showTactic('double-attack');
+            showTactic('defender');
+        }
+
+        // Reset board to initial position
+        function resetBoard() {
+            createBoard('setupBoard', initialPosition);
+        }
+
+        // Highlight files
+        function highlightFiles() {
+            const squares = document.querySelectorAll('#setupBoard .chess-square');
+            squares.forEach(square => {
+                square.classList.remove('highlight');
+            });
+
+            // Highlight e and d files
+            squares.forEach(square => {
+                const col = parseInt(square.dataset.col);
+                if (col === 3 || col === 4) {
+                    square.classList.add('highlight');
+                }
+            });
+        }
+
+        // Highlight ranks
+        function highlightRanks() {
+            const squares = document.querySelectorAll('#setupBoard .chess-square');
+            squares.forEach(square => {
+                square.classList.remove('highlight');
+            });
+
+            // Highlight 4th and 5th ranks
+            squares.forEach(square => {
+                const row = parseInt(square.dataset.row);
+                if (row === 3 || row === 4) {
+                    square.classList.add('highlight');
+                }
+            });
+        }
+
+        // Checkmate puzzle
+        function resetMatePuzzle() {
+            const matePosition = [
+                ['♚', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['♔', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['♕', '', '', '', '', '', '', '']
+            ];
+            createBoard('mateBoard', matePosition);
+
+            const board = document.getElementById('mateBoard');
+            const squares = board.querySelectorAll('.chess-square');
+
+            squares.forEach(square => {
+                square.addEventListener('click', function() {
+                    const row = parseInt(this.dataset.row);
+                    const col = parseInt(this.dataset.col);
+
+                    // Check if queen moved to b7 or b8 for checkmate
+                    if ((row === 0 && col === 1) || (row === 1 && col === 1)) {
+                        const message = document.getElementById('mateMessage');
+                        message.textContent = 'Checkmate! Well done!';
+                        message.className = 'message-box success show';
+
+                        // Move queen
+                        matePosition[row][col] = '♕';
+                        matePosition[7][0] = '';
+                        createBoard('mateBoard', matePosition);
+                    }
+                });
+            });
+
+            document.getElementById('mateMessage').classList.remove('show');
+        }
+
+        // Show hint for mate puzzle
+        function showHint() {
+            const message = document.getElementById('mateMessage');
+            message.textContent = 'Hint: Move the queen to deliver checkmate on the b-file!';
+            message.className = 'message-box info show';
+        }
+
+        // Quiz functionality
+        function checkAnswer(element, isCorrect) {
+            const options = element.parentElement.querySelectorAll('.quiz-option');
+            options.forEach(opt => {
+                opt.style.pointerEvents = 'none';
+            });
+
+            if (isCorrect) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('incorrect');
+                // Show correct answer
+                options.forEach(opt => {
+                    if (!opt.classList.contains('incorrect')) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+
+            // Determine which quiz
+            let quizType = 'beginner';
+            if (element.closest('#intermediate-quiz')) {
+                quizType = 'intermediate';
+            } else if (element.closest('#advanced-quiz')) {
+                quizType = 'advanced';
+            }
+
+            questionsAnswered[quizType]++;
+            if (isCorrect) {
+                quizScores[quizType]++;
+            }
+
+            // Show result if all questions answered
+            const totalQuestions = 4;
+            if (questionsAnswered[quizType] === totalQuestions) {
+                showQuizResult(quizType, totalQuestions);
+            }
+
+            updateProgress();
+        }
+
+        function showQuizResult(quizType, total) {
+            const resultId = quizType + 'Result';
+            const result = document.getElementById(resultId);
+            const score = quizScores[quizType];
+            const percentage = (score / total) * 100;
+
+            let message = `You scored ${score} out of ${total} (${percentage}%)! `;
+
+            if (percentage === 100) {
+                message += 'Perfect score! Outstanding!';
+                result.style.background = 'rgba(39, 174, 96, 0.2)';
+                result.style.color = 'var(--success-color)';
+            } else if (percentage >= 75) {
+                message += 'Great job!';
+                result.style.background = 'rgba(52, 152, 219, 0.2)';
+                result.style.color = 'var(--secondary-color)';
+            } else if (percentage >= 50) {
+                message += 'Good effort, keep learning!';
+                result.style.background = 'rgba(243, 156, 18, 0.2)';
+                result.style.color = '#f39c12';
+            } else {
+                message += 'Review the material and try again!';
+                result.style.background = 'rgba(231, 76, 60, 0.2)';
+                result.style.color = 'var(--accent-color)';
+            }
+
+            result.textContent = message;
+            result.classList.add('show');
+        }
+
+        // Update progress
+        function updateProgress() {
+            const totalQuestions = 12;
+            const answeredQuestions = questionsAnswered.beginner + questionsAnswered.intermediate + questionsAnswered.advanced;
+            const percentage = Math.round((answeredQuestions / totalQuestions) * 100);
+
+            const progressFill = document.getElementById('overallProgress');
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = percentage + '%';
+        }
+
+        // Smooth scrolling and active nav
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+
+                    // Update active link
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Scroll to top
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            resetBoard();
+            initializeMiniBoards();
+            resetMatePuzzle();
+        });
+
+        // Update active nav on scroll
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

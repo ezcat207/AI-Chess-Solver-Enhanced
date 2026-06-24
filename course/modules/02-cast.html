@@ -1,0 +1,236 @@
+<section class="module" id="module-2" style="background: var(--color-bg-warm);">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Cast</h1>
+      <p class="module-subtitle">Three JavaScript files, each with one clear job</p>
+    </header>
+
+    <!-- Screen 1: The Project Structure -->
+    <div class="screen animate-in">
+      <p>This chess AI is built from just three <span class="term" data-definition="JavaScript (JS) is the programming language that runs in web browsers. It makes websites interactive.">JavaScript</span> files. No frameworks, no build tools — just vanilla JS you can open directly in a browser.</p>
+
+      <p>Think of it like a theater production. Three actors, each playing their role, coordinating to make the show happen.</p>
+
+      <div class="file-tree">
+        <div class="ft-file">
+          <span class="ft-name">chess-engine.js</span>
+          <span class="ft-desc">— The rules referee. Knows every chess rule, validates moves, detects checkmate.</span>
+        </div>
+        <div class="ft-file">
+          <span class="ft-name">chess-ai.js</span>
+          <span class="ft-desc">— The strategic thinker. Searches moves, evaluates positions, picks the best option.</span>
+        </div>
+        <div class="ft-file">
+          <span class="ft-name">app.js</span>
+          <span class="ft-desc">— The coordinator. Connects the UI to the engine and AI, manages game flow.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 2: Component Responsibilities -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What Each File Does</h2>
+
+      <div class="pattern-cards stagger-children">
+        <div class="pattern-card animate-in">
+          <div class="pattern-icon" style="background: var(--color-actor-1); color: white;">⚖️</div>
+          <h3 class="pattern-title">chess-engine.js</h3>
+          <p class="pattern-desc">The rule book. It generates all legal moves, checks if a king is in check, handles special moves like <span class="term" data-definition="Castling is a special move in chess where the king and rook move simultaneously. The king moves two squares toward the rook, and the rook jumps over to the other side of the king.">castling</span> and <span class="term" data-definition="En passant is a special pawn capture that can happen when an opponent's pawn moves two squares forward from its starting position, landing beside your pawn. You can capture it as if it had only moved one square.">en passant</span>. It has no opinion on which move is better — that's not its job.</p>
+        </div>
+
+        <div class="pattern-card animate-in">
+          <div class="pattern-icon" style="background: var(--color-actor-2); color: white;">🧠</div>
+          <h3 class="pattern-title">chess-ai.js</h3>
+          <p class="pattern-desc">The strategist. Gets legal moves from the engine, simulates thousands of future positions, scores each one based on material and position, then returns the highest-scoring move. This is where Minimax and Alpha-Beta pruning live.</p>
+        </div>
+
+        <div class="pattern-card animate-in">
+          <div class="pattern-icon" style="background: var(--color-actor-3); color: white;">🎮</div>
+          <h3 class="pattern-title">app.js</h3>
+          <p class="pattern-desc">The stage manager. Updates the visual board when moves happen, handles clicks if a human is playing, tells the AI when it's time to think, displays stats like nodes searched and eval bars. It's the glue between what you see and what's computing underneath.</p>
+        </div>
+      </div>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <div class="callout-content">
+          <span class="callout-title">Why Separation Matters</span>
+          <p>Each file has one job. This isn't just clean code — it's practical. Want to swap in a different AI algorithm? Just replace chess-ai.js. Want to add a mobile UI? Write a new app.js but keep the engine. <span class="term" data-definition="Separation of concerns means dividing a program into distinct sections, each handling one responsibility. It makes code easier to understand, test, and modify.">Separation of concerns</span> means you can change one piece without breaking the others.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: Code Translation - Initialization -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">How the System Starts Up</h2>
+
+      <p>When you load the page, these three components need to introduce themselves and get ready. Here's what happens in <code>app.js</code>:</p>
+
+      <div class="translation-block">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line"><span class="code-keyword">let</span> game = <span class="code-keyword">new</span> <span class="code-function">ChessEngine</span>();</span>
+<span class="code-line"><span class="code-keyword">let</span> whiteAI = <span class="code-keyword">new</span> <span class="code-function">ChessAI</span>(<span class="code-number">4</span>, <span class="code-string">'aggressive'</span>);</span>
+<span class="code-line"><span class="code-keyword">let</span> blackAI = <span class="code-keyword">new</span> <span class="code-function">ChessAI</span>(<span class="code-number">4</span>, <span class="code-string">'positional'</span>);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-function">renderBoard</span>();</span>
+<span class="code-line"><span class="code-function">updateEval</span>();</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Create a new chess game with the standard starting position.</p>
+            <p class="tl">Create White's AI brain — it'll search 4 moves deep and play aggressively (prioritizing attacks).</p>
+            <p class="tl">Create Black's AI brain — also depth 4, but plays positionally (prioritizing strong piece placement).</p>
+            <p class="tl">Draw the board on screen with all pieces in their starting squares.</p>
+            <p class="tl">Calculate and display the initial evaluation bar (should be 0.0 since it's an equal position).</p>
+          </div>
+        </div>
+      </div>
+
+      <p>That's it. Five lines to boot up a chess computer. The heavy lifting — all the move generation, search trees, and evaluation logic — is hidden inside those <span class="term" data-definition="A class is a blueprint for creating objects. ChessEngine is a class that defines what a chess game can do (generate moves, check legality, etc). Each new ChessEngine() creates a fresh game instance.">class constructors</span>.</p>
+    </div>
+
+    <!-- Screen 4: Communication Flow -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">How They Talk to Each Other</h2>
+
+      <p>The three files don't work in isolation. Here's the typical flow when it's AI's turn to move:</p>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-num">1</div>
+          <p>app.js detects it's AI's turn</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">2</div>
+          <p>Calls AI.findBestMove()</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">3</div>
+          <p>AI asks engine for legal moves</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">4</div>
+          <p>Engine returns move list</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">5</div>
+          <p>AI simulates + scores each move</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">6</div>
+          <p>AI returns best move to app.js</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">7</div>
+          <p>app.js updates the board visually</p>
+        </div>
+      </div>
+
+      <p>Notice how app.js never directly touches game rules, and the AI never directly updates the UI. Each layer respects the boundaries.</p>
+    </div>
+
+    <!-- Screen 5: Why This Architecture -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Why This Setup Works</h2>
+
+      <p>This three-file architecture isn't arbitrary. It follows a pattern you'll see everywhere in software: <strong>Model-View-Controller</strong> (or in modern terms, separation of data, logic, and presentation).</p>
+
+      <div class="icon-rows">
+        <div class="icon-row">
+          <div class="icon-circle" style="background: var(--color-actor-1);">⚖️</div>
+          <div>
+            <strong>chess-engine.js = Model</strong>
+            <p>Holds the game state (where pieces are) and the rules (what moves are legal). Pure logic, no UI concerns.</p>
+          </div>
+        </div>
+        <div class="icon-row">
+          <div class="icon-circle" style="background: var(--color-actor-2);">🧠</div>
+          <div>
+            <strong>chess-ai.js = Controller</strong>
+            <p>Makes decisions based on the model. Takes game state, processes it, returns actions.</p>
+          </div>
+        </div>
+        <div class="icon-row">
+          <div class="icon-circle" style="background: var(--color-actor-3);">🎮</div>
+          <div>
+            <strong>app.js = View</strong>
+            <p>Presents everything to the user. Handles rendering, clicks, animations, stats display.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">🎯</span>
+        <div class="callout-content">
+          <span class="callout-title">When You're Steering AI</span>
+          <p>If you ask an AI assistant to "add a new feature," knowing this structure helps you be specific: "In app.js, add a button that calls engine.generateLegalMoves() and displays them as highlights on the board." That's way clearer than "make it show possible moves" — you've told the AI exactly which file to touch and which function to call.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 6: Quiz -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Check Your Understanding</h2>
+
+      <div class="quiz-container" id="quiz-module2">
+        <div class="quiz-question-block"
+             data-correct="option-c"
+             data-explanation-right="Exactly! The engine is the rules referee — it knows what's legal but has no opinion on what's smart. The AI uses those legal moves to decide what to play, and app.js displays the result. Each file has one job."
+             data-explanation-wrong="Think about what 'engine' means in this context. It's not making strategic decisions — that's the AI's job. The engine just knows the rules of chess inside and out.">
+          <h3 class="quiz-question">A user reports: 'The AI is making illegal moves.' Which file would you check first?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>chess-ai.js — the AI must be broken</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>app.js — the UI is probably rendering wrong</span>
+            </button>
+            <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>chess-engine.js — move generation might have a bug</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-question-block"
+             data-correct="option-b"
+             data-explanation-right="Correct! app.js handles everything UI-related. The board animation, the move history, the evaluation bar — all app.js. The engine and AI just care about logic and numbers."
+             data-explanation-wrong="Remember the separation: engine = rules, AI = strategy, app = presentation. Which one is responsible for what the user sees?">
+          <h3 class="quiz-question">You want the board to animate pieces sliding smoothly instead of teleporting. Where do you add that code?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>chess-engine.js</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>app.js</span>
+            </button>
+            <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>chess-ai.js</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+
+        <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+        <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+      </div>
+    </div>
+
+  </div>
+</section>

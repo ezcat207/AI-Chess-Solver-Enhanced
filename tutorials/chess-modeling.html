@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Modeling: Data Structures & Algorithms</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0f1419;
+            --bg-medium: #1a1f2e;
+            --bg-light: #252b3b;
+            --accent: #4a9eff;
+            --accent-hover: #6bb0ff;
+            --text: #e4e4e7;
+            --text-dim: #9ca3af;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --code-bg: #1e1e1e;
+            --border: #374151;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .nav {
+            background: var(--bg-medium);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .nav-link {
+            padding: 0.6rem 1.2rem;
+            background: var(--bg-light);
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            border: 1px solid var(--border);
+        }
+
+        .nav-link:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
+        }
+
+        .section {
+            background: var(--bg-medium);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .section h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+        }
+
+        .section h3 {
+            font-size: 1.4rem;
+            margin: 2rem 0 1rem 0;
+            color: var(--text);
+        }
+
+        .section h4 {
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.8rem 0;
+            color: var(--text-dim);
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-left: 4px solid var(--accent);
+            position: relative;
+        }
+
+        .code-block code {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            color: #d4d4d4;
+            line-height: 1.5;
+        }
+
+        .code-label {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            background: var(--bg-medium);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+        }
+
+        .keyword { color: #c586c0; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+        .comment { color: #6a9955; font-style: italic; }
+        .function { color: #dcdcaa; }
+        .class { color: #4ec9b0; }
+        .constant { color: #4fc1ff; }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .comparison-card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .comparison-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(74, 158, 255, 0.2);
+        }
+
+        .comparison-card h4 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+
+        .pros-cons {
+            margin-top: 1rem;
+        }
+
+        .pros-cons ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .pros-cons li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .pros-cons li::before {
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .pros li::before {
+            content: '✓';
+            color: var(--success);
+        }
+
+        .cons li::before {
+            content: '✗';
+            color: var(--error);
+        }
+
+        .interactive-demo {
+            background: var(--bg-light);
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border: 2px solid var(--accent);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: var(--bg-medium);
+            border: 1px solid var(--border);
+        }
+
+        button.secondary:hover {
+            background: var(--bg-light);
+        }
+
+        .visualization {
+            background: var(--code-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .board-viz {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            gap: 2px;
+            margin: 1rem auto;
+        }
+
+        .square {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .square.light { background: #f0d9b5; }
+        .square.dark { background: #b58863; }
+        .square.highlight { background: #7fc97f; }
+        .square.attack { background: #ff6b6b; }
+
+        .square-label {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 0.6rem;
+            color: rgba(0,0,0,0.4);
+        }
+
+        .tree-viz {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .tree-node {
+            background: var(--bg-medium);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--accent);
+            display: inline-block;
+            position: relative;
+            animation: fadeIn 0.5s;
+        }
+
+        .tree-level {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .tree-connector {
+            width: 2px;
+            height: 30px;
+            background: var(--accent);
+            margin: 0 auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+
+        .complexity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: var(--bg-light);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .complexity-table th,
+        .complexity-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .complexity-table th {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+        }
+
+        .complexity-table tr:hover {
+            background: var(--bg-medium);
+        }
+
+        .memory-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .memory-block {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .memory-bar {
+            flex: 1;
+            height: 40px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .memory-label {
+            min-width: 150px;
+            font-weight: 500;
+        }
+
+        .memory-value {
+            min-width: 100px;
+            text-align: right;
+            color: var(--text-dim);
+        }
+
+        .algorithm-stepper {
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .step {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: var(--bg-medium);
+            border-radius: 6px;
+            border-left: 4px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            border-left-color: var(--accent);
+            background: var(--bg-light);
+            animation: pulse 1s infinite;
+        }
+
+        .step.completed {
+            border-left-color: var(--success);
+            opacity: 0.7;
+        }
+
+        .bitboard-viz {
+            display: grid;
+            grid-template-columns: repeat(8, 40px);
+            gap: 2px;
+            margin: 1rem 0;
+        }
+
+        .bit {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .bit.set {
+            background: var(--accent);
+            color: white;
+        }
+
+        .info-box {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning);
+            margin: 1.5rem 0;
+        }
+
+        .info-box.tip {
+            border-left-color: var(--success);
+        }
+
+        .info-box.warning {
+            border-left-color: var(--warning);
+        }
+
+        .info-box h4 {
+            margin-top: 0;
+            color: var(--text);
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8rem; }
+            .section { padding: 1.5rem; }
+            .board-viz {
+                grid-template-columns: repeat(8, 40px);
+                grid-template-rows: repeat(8, 40px);
+            }
+            .square { width: 40px; height: 40px; font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Chess Modeling: Data Structures & Algorithms</h1>
+        <p>A comprehensive guide to building a chess engine from scratch</p>
+    </div>
+
+    <div class="container">
+        <nav class="nav">
+            <div class="nav-links">
+                <a href="#board-rep" class="nav-link">Board Representation</a>
+                <a href="#piece-rep" class="nav-link">Piece Representation</a>
+                <a href="#move-gen" class="nav-link">Move Generation</a>
+                <a href="#move-val" class="nav-link">Move Validation</a>
+                <a href="#game-state" class="nav-link">Game State</a>
+                <a href="#search" class="nav-link">Search Algorithms</a>
+                <a href="#evaluation" class="nav-link">Evaluation</a>
+                <a href="#optimization" class="nav-link">Optimizations</a>
+            </div>
+        </nav>
+
+        <!-- Board Representation -->
+        <section id="board-rep" class="section">
+            <h2>1. Board Representation</h2>
+            <p>The foundation of any chess engine is how it represents the board in memory. Different representations offer different tradeoffs between simplicity, performance, and memory usage.</p>
+
+            <h3>1.1 Array Representation (8x8 or 64-element)</h3>
+            <p>The most straightforward approach: a flat array with 64 elements representing the 8x8 board.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-engine.js</span>
+<span class="keyword">class</span> <span class="class">ChessEngine</span> {
+    <span class="function">constructor</span>(fen) {
+        <span class="keyword">this</span>.<span class="constant">board</span> = <span class="class">Array</span>(<span class="number">64</span>).<span class="function">fill</span>(<span class="keyword">null</span>);
+        <span class="keyword">this</span>.<span class="constant">turn</span> = COLOR.WHITE;
+        <span class="keyword">this</span>.<span class="constant">castling</span> = { K: <span class="keyword">true</span>, Q: <span class="keyword">true</span>, k: <span class="keyword">true</span>, q: <span class="keyword">true</span> };
+        <span class="keyword">this</span>.<span class="constant">enPassant</span> = <span class="number">-1</span>;
+    }
+
+    <span class="comment">// Index calculation: row * 8 + col</span>
+    <span class="function">idx</span>(r, c) { <span class="keyword">return</span> r * <span class="number">8</span> + c; }
+    <span class="function">row</span>(i) { <span class="keyword">return</span> Math.<span class="function">floor</span>(i / <span class="number">8</span>); }
+    <span class="function">col</span>(i) { <span class="keyword">return</span> i % <span class="number">8</span>; }
+}</code></pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h4>Interactive: Array Indexing</h4>
+                <div class="controls">
+                    <button onclick="arrayDemo.highlightSquare()">Show Random Square</button>
+                    <button onclick="arrayDemo.showIndices()" class="secondary">Toggle Indices</button>
+                    <button onclick="arrayDemo.reset()" class="secondary">Reset</button>
+                </div>
+                <div class="visualization">
+                    <div id="array-board" class="board-viz"></div>
+                    <div id="array-info" style="margin-top: 1rem; color: var(--text-dim);"></div>
+                </div>
+            </div>
+
+            <h3>1.2 Bitboards</h3>
+            <p>Advanced representation using 64-bit integers where each bit represents a square. Allows parallel operations on multiple squares simultaneously.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// Bitboard representation (BigInt in JavaScript)</span>
+<span class="keyword">class</span> <span class="class">BitboardEngine</span> {
+    <span class="function">constructor</span>() {
+        <span class="keyword">this</span>.<span class="constant">whitePawns</span>   = <span class="number">0xFF00n</span>;           <span class="comment">// Rank 2</span>
+        <span class="keyword">this</span>.<span class="constant">whiteKnights</span> = <span class="number">0x42n</span>;             <span class="comment">// b1, g1</span>
+        <span class="keyword">this</span>.<span class="constant">whiteBishops</span> = <span class="number">0x24n</span>;             <span class="comment">// c1, f1</span>
+        <span class="keyword">this</span>.<span class="constant">whiteRooks</span>   = <span class="number">0x81n</span>;             <span class="comment">// a1, h1</span>
+        <span class="keyword">this</span>.<span class="constant">whiteQueens</span>  = <span class="number">0x8n</span>;              <span class="comment">// d1</span>
+        <span class="keyword">this</span>.<span class="constant">whiteKing</span>    = <span class="number">0x10n</span>;             <span class="comment">// e1</span>
+    }
+
+    <span class="comment">// Set a bit (place a piece)</span>
+    <span class="function">setBit</span>(bitboard, square) {
+        <span class="keyword">return</span> bitboard | (<span class="number">1n</span> << <span class="class">BigInt</span>(square));
+    }
+
+    <span class="comment">// Clear a bit (remove a piece)</span>
+    <span class="function">clearBit</span>(bitboard, square) {
+        <span class="keyword">return</span> bitboard & ~(<span class="number">1n</span> << <span class="class">BigInt</span>(square));
+    }
+
+    <span class="comment">// Check if bit is set</span>
+    <span class="function">getBit</span>(bitboard, square) {
+        <span class="keyword">return</span> (bitboard >> <span class="class">BigInt</span>(square)) & <span class="number">1n</span>;
+    }
+}</code></pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h4>Interactive: Bitboard Visualization</h4>
+                <div class="controls">
+                    <button onclick="bitboardDemo.showPawns()">Show Pawns</button>
+                    <button onclick="bitboardDemo.showKnights()">Show Knights</button>
+                    <button onclick="bitboardDemo.toggleSquare()">Toggle Random Square</button>
+                    <button onclick="bitboardDemo.reset()" class="secondary">Clear</button>
+                </div>
+                <div class="visualization">
+                    <div id="bitboard-display" class="bitboard-viz"></div>
+                    <div id="bitboard-value" style="margin-top: 1rem; font-family: monospace;"></div>
+                </div>
+            </div>
+
+            <h3>1.3 0x88 Representation</h3>
+            <p>16x8 array (128 elements) where valid squares satisfy <code>(index & 0x88) == 0</code>. Enables fast boundary checking.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="keyword">class</span> <span class="class">Ox88Engine</span> {
+    <span class="function">constructor</span>() {
+        <span class="keyword">this</span>.<span class="constant">board</span> = <span class="keyword">new</span> <span class="class">Array</span>(<span class="number">128</span>).<span class="function">fill</span>(<span class="keyword">null</span>);
+    }
+
+    <span class="comment">// Fast boundary check: if any of these bits are set, it's off-board</span>
+    <span class="function">isValid</span>(square) {
+        <span class="keyword">return</span> (square & <span class="number">0x88</span>) === <span class="number">0</span>;
+    }
+
+    <span class="comment">// Example: Check if move is valid</span>
+    <span class="function">canMoveTo</span>(from, to) {
+        <span class="keyword">if</span> (!<span class="keyword">this</span>.<span class="function">isValid</span>(to)) <span class="keyword">return</span> <span class="keyword">false</span>;
+        <span class="keyword">return</span> <span class="keyword">true</span>;
+    }
+}</code></pre>
+            </div>
+
+            <h3>Comparison</h3>
+            <div class="comparison">
+                <div class="comparison-card">
+                    <h4>8x8 Array</h4>
+                    <div class="pros-cons">
+                        <p><strong>Pros:</strong></p>
+                        <ul class="pros">
+                            <li>Simple and intuitive</li>
+                            <li>Easy to debug</li>
+                            <li>Minimal memory (512 bytes)</li>
+                            <li>Direct index access O(1)</li>
+                        </ul>
+                        <p><strong>Cons:</strong></p>
+                        <ul class="cons">
+                            <li>Needs bounds checking</li>
+                            <li>No parallel operations</li>
+                            <li>Slower move generation</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="comparison-card">
+                    <h4>Bitboards</h4>
+                    <div class="pros-cons">
+                        <p><strong>Pros:</strong></p>
+                        <ul class="pros">
+                            <li>Extremely fast (bitwise ops)</li>
+                            <li>Parallel square operations</li>
+                            <li>Compact (12 * 8 bytes = 96 bytes)</li>
+                            <li>Elegant attack detection</li>
+                        </ul>
+                        <p><strong>Cons:</strong></p>
+                        <ul class="cons">
+                            <li>Complex implementation</li>
+                            <li>Harder to debug</li>
+                            <li>Requires bit manipulation</li>
+                            <li>Limited in JavaScript</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="comparison-card">
+                    <h4>0x88</h4>
+                    <div class="pros-cons">
+                        <p><strong>Pros:</strong></p>
+                        <ul class="pros">
+                            <li>Fast boundary checking</li>
+                            <li>No explicit bounds tests</li>
+                            <li>Good for mailbox engines</li>
+                        </ul>
+                        <p><strong>Cons:</strong></p>
+                        <ul class="cons">
+                            <li>Wastes memory (1024 bytes)</li>
+                            <li>Less intuitive indexing</li>
+                            <li>Not faster than modern approaches</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <table class="complexity-table">
+                <thead>
+                    <tr>
+                        <th>Operation</th>
+                        <th>8x8 Array</th>
+                        <th>Bitboards</th>
+                        <th>0x88</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Get Piece</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                    </tr>
+                    <tr>
+                        <td>Set Piece</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                    </tr>
+                    <tr>
+                        <td>Find All Pieces</td>
+                        <td>O(64)</td>
+                        <td>O(number of pieces)</td>
+                        <td>O(128)</td>
+                    </tr>
+                    <tr>
+                        <td>Boundary Check</td>
+                        <td>O(1) with conditions</td>
+                        <td>Implicit</td>
+                        <td>O(1) single bitwise op</td>
+                    </tr>
+                    <tr>
+                        <td>Memory Usage</td>
+                        <td>512 bytes</td>
+                        <td>96 bytes</td>
+                        <td>1024 bytes</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Piece Representation -->
+        <section id="piece-rep" class="section">
+            <h2>2. Piece Representation</h2>
+
+            <h3>2.1 Object-Based (Used in AI Chess Solver)</h3>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-engine.js</span>
+<span class="keyword">const</span> <span class="constant">PIECE</span> = {
+    KING: <span class="string">'k'</span>,
+    QUEEN: <span class="string">'q'</span>,
+    ROOK: <span class="string">'r'</span>,
+    BISHOP: <span class="string">'b'</span>,
+    KNIGHT: <span class="string">'n'</span>,
+    PAWN: <span class="string">'p'</span>
+};
+
+<span class="keyword">const</span> <span class="constant">COLOR</span> = { WHITE: <span class="string">'w'</span>, BLACK: <span class="string">'b'</span> };
+
+<span class="comment">// Each square contains either null or:</span>
+{
+    color: <span class="string">'w'</span>,      <span class="comment">// 'w' or 'b'</span>
+    piece: <span class="string">'q'</span>       <span class="comment">// 'k', 'q', 'r', 'b', 'n', 'p'</span>
+}
+
+<span class="comment">// Example: placing pieces</span>
+board[<span class="number">4</span>] = { color: COLOR.BLACK, piece: PIECE.KING };
+board[<span class="number">60</span>] = { color: COLOR.WHITE, piece: PIECE.KING };</code></pre>
+            </div>
+
+            <h3>2.2 Integer Encoding</h3>
+            <p>More memory-efficient: encode piece type and color in a single integer.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// Encoding scheme: color (1 bit) + piece type (3 bits)</span>
+<span class="keyword">const</span> <span class="constant">PIECE_NONE</span>   = <span class="number">0</span>;
+<span class="keyword">const</span> <span class="constant">PIECE_KING</span>   = <span class="number">1</span>;
+<span class="keyword">const</span> <span class="constant">PIECE_PAWN</span>   = <span class="number">2</span>;
+<span class="keyword">const</span> <span class="constant">PIECE_KNIGHT</span> = <span class="number">3</span>;
+<span class="keyword">const</span> <span class="constant">PIECE_BISHOP</span> = <span class="number">4</span>;
+<span class="keyword">const</span> <span class="constant">PIECE_ROOK</span>   = <span class="number">5</span>;
+<span class="keyword">const</span> <span class="constant">PIECE_QUEEN</span>  = <span class="number">6</span>;
+
+<span class="keyword">const</span> <span class="constant">COLOR_WHITE</span> = <span class="number">0</span>;
+<span class="keyword">const</span> <span class="constant">COLOR_BLACK</span> = <span class="number">8</span>;  <span class="comment">// Bit 4</span>
+
+<span class="comment">// Encoding/Decoding</span>
+<span class="keyword">function</span> <span class="function">encodePiece</span>(pieceType, color) {
+    <span class="keyword">return</span> pieceType | color;
+}
+
+<span class="keyword">function</span> <span class="function">getPieceType</span>(encoded) {
+    <span class="keyword">return</span> encoded & <span class="number">0x07</span>;  <span class="comment">// Lower 3 bits</span>
+}
+
+<span class="keyword">function</span> <span class="function">getPieceColor</span>(encoded) {
+    <span class="keyword">return</span> encoded & <span class="number">0x08</span>;  <span class="comment">// Bit 4</span>
+}
+
+<span class="comment">// Example</span>
+<span class="keyword">const</span> whiteQueen = <span class="function">encodePiece</span>(PIECE_QUEEN, COLOR_WHITE);  <span class="comment">// 6</span>
+<span class="keyword">const</span> blackKing  = <span class="function">encodePiece</span>(PIECE_KING, COLOR_BLACK);   <span class="comment">// 9</span></code></pre>
+            </div>
+
+            <h3>2.3 Unicode Characters</h3>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-engine.js - for display</span>
+<span class="keyword">const</span> <span class="constant">PIECE_UNICODE</span> = {
+    wk: <span class="string">'♔'</span>, wq: <span class="string">'♕'</span>, wr: <span class="string">'♖'</span>, wb: <span class="string">'♗'</span>, wn: <span class="string">'♘'</span>, wp: <span class="string">'♙'</span>,
+    bk: <span class="string">'♚'</span>, bq: <span class="string">'♛'</span>, br: <span class="string">'♜'</span>, bb: <span class="string">'♝'</span>, bn: <span class="string">'♞'</span>, bp: <span class="string">'♟'</span>
+};</code></pre>
+            </div>
+
+            <div class="comparison">
+                <div class="comparison-card">
+                    <h4>Object-Based</h4>
+                    <div class="pros-cons">
+                        <p><strong>Pros:</strong></p>
+                        <ul class="pros">
+                            <li>Self-documenting code</li>
+                            <li>Easy to debug</li>
+                            <li>Flexible structure</li>
+                        </ul>
+                        <p><strong>Cons:</strong></p>
+                        <ul class="cons">
+                            <li>Higher memory overhead</li>
+                            <li>Slower comparisons</li>
+                            <li>Reference semantics</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="comparison-card">
+                    <h4>Integer Encoding</h4>
+                    <div class="pros-cons">
+                        <p><strong>Pros:</strong></p>
+                        <ul class="pros">
+                            <li>Minimal memory (4 bytes)</li>
+                            <li>Fast comparisons</li>
+                            <li>Cache-friendly</li>
+                            <li>Bitwise operations</li>
+                        </ul>
+                        <p><strong>Cons:</strong></p>
+                        <ul class="cons">
+                            <li>Less readable</li>
+                            <li>Requires encode/decode</li>
+                            <li>Magic numbers</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memory-diagram">
+                <h4>Memory Comparison</h4>
+                <div class="memory-block">
+                    <div class="memory-label">Object-Based</div>
+                    <div class="memory-bar" style="width: 100%;"></div>
+                    <div class="memory-value">~24 bytes/piece</div>
+                </div>
+                <div class="memory-block">
+                    <div class="memory-label">Integer Encoding</div>
+                    <div class="memory-bar" style="width: 16.7%;"></div>
+                    <div class="memory-value">4 bytes/piece</div>
+                </div>
+                <div class="memory-block">
+                    <div class="memory-label">Bitboard</div>
+                    <div class="memory-bar" style="width: 33.3%;"></div>
+                    <div class="memory-value">8 bytes/piece-type</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Move Generation -->
+        <section id="move-gen" class="section">
+            <h2>3. Move Generation Algorithms</h2>
+
+            <h3>3.1 Pseudo-Legal Move Generation</h3>
+            <p>Generates all moves that follow piece movement rules without checking if they leave the king in check.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-engine.js</span>
+<span class="function">generatePseudoMoves</span>(color) {
+    <span class="keyword">const</span> moves = [];
+    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i < <span class="number">64</span>; i++) {
+        <span class="keyword">const</span> p = <span class="keyword">this</span>.board[i];
+        <span class="keyword">if</span> (!p || p.color !== color) <span class="keyword">continue</span>;
+
+        <span class="keyword">const</span> r = <span class="keyword">this</span>.<span class="function">row</span>(i), c = <span class="keyword">this</span>.<span class="function">col</span>(i);
+        <span class="keyword">switch</span> (p.piece) {
+            <span class="keyword">case</span> PIECE.PAWN:   <span class="keyword">this</span>.<span class="function">_pawnMoves</span>(i, r, c, color, moves); <span class="keyword">break</span>;
+            <span class="keyword">case</span> PIECE.KNIGHT: <span class="keyword">this</span>.<span class="function">_knightMoves</span>(i, r, c, color, moves); <span class="keyword">break</span>;
+            <span class="keyword">case</span> PIECE.BISHOP: <span class="keyword">this</span>.<span class="function">_slidingMoves</span>(i, r, c, color,
+                [[-<span class="number">1</span>,-<span class="number">1</span>],[-<span class="number">1</span>,<span class="number">1</span>],[<span class="number">1</span>,-<span class="number">1</span>],[<span class="number">1</span>,<span class="number">1</span>]], moves); <span class="keyword">break</span>;
+            <span class="keyword">case</span> PIECE.ROOK:   <span class="keyword">this</span>.<span class="function">_slidingMoves</span>(i, r, c, color,
+                [[-<span class="number">1</span>,<span class="number">0</span>],[<span class="number">1</span>,<span class="number">0</span>],[<span class="number">0</span>,-<span class="number">1</span>],[<span class="number">0</span>,<span class="number">1</span>]], moves); <span class="keyword">break</span>;
+            <span class="keyword">case</span> PIECE.QUEEN:  <span class="keyword">this</span>.<span class="function">_slidingMoves</span>(i, r, c, color,
+                [[-<span class="number">1</span>,-<span class="number">1</span>],[-<span class="number">1</span>,<span class="number">1</span>],[<span class="number">1</span>,-<span class="number">1</span>],[<span class="number">1</span>,<span class="number">1</span>],
+                 [-<span class="number">1</span>,<span class="number">0</span>],[<span class="number">1</span>,<span class="number">0</span>],[<span class="number">0</span>,-<span class="number">1</span>],[<span class="number">0</span>,<span class="number">1</span>]], moves); <span class="keyword">break</span>;
+            <span class="keyword">case</span> PIECE.KING:   <span class="keyword">this</span>.<span class="function">_kingMoves</span>(i, r, c, color, moves); <span class="keyword">break</span>;
+        }
+    }
+    <span class="keyword">return</span> moves;
+}</code></pre>
+            </div>
+
+            <h3>3.2 Sliding Piece Move Generation</h3>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// Bishops, Rooks, Queens - slide until blocked</span>
+<span class="function">_slidingMoves</span>(i, r, c, color, dirs, moves) {
+    <span class="keyword">for</span> (<span class="keyword">const</span> [dr, dc] <span class="keyword">of</span> dirs) {
+        <span class="keyword">let</span> nr = r + dr, nc = c + dc;
+        <span class="keyword">while</span> (<span class="keyword">this</span>.<span class="function">inBounds</span>(nr, nc)) {
+            <span class="keyword">const</span> ti = <span class="keyword">this</span>.<span class="function">idx</span>(nr, nc);
+            <span class="keyword">const</span> t = <span class="keyword">this</span>.board[ti];
+
+            <span class="keyword">if</span> (t) {
+                <span class="comment">// Blocked by piece - can capture if enemy</span>
+                <span class="keyword">if</span> (t.color !== color) moves.<span class="function">push</span>({ from: i, to: ti });
+                <span class="keyword">break</span>;
+            }
+
+            <span class="comment">// Empty square - can move here</span>
+            moves.<span class="function">push</span>({ from: i, to: ti });
+            nr += dr; nc += dc;
+        }
+    }
+}</code></pre>
+            </div>
+
+            <h3>3.3 Knight Move Generation</h3>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// Knights jump in L-shape: 2 squares in one direction, 1 in perpendicular</span>
+<span class="function">_knightMoves</span>(i, r, c, color, moves) {
+    <span class="keyword">const</span> offsets = [
+        [-<span class="number">2</span>,-<span class="number">1</span>], [-<span class="number">2</span>,<span class="number">1</span>],  <span class="comment">// Up-left, up-right</span>
+        [-<span class="number">1</span>,-<span class="number">2</span>], [-<span class="number">1</span>,<span class="number">2</span>],  <span class="comment">// Left-up, right-up</span>
+        [<span class="number">1</span>,-<span class="number">2</span>],  [<span class="number">1</span>,<span class="number">2</span>],   <span class="comment">// Left-down, right-down</span>
+        [<span class="number">2</span>,-<span class="number">1</span>],  [<span class="number">2</span>,<span class="number">1</span>]    <span class="comment">// Down-left, down-right</span>
+    ];
+
+    <span class="keyword">for</span> (<span class="keyword">const</span> [dr, dc] <span class="keyword">of</span> offsets) {
+        <span class="keyword">const</span> nr = r + dr, nc = c + dc;
+        <span class="keyword">if</span> (!<span class="keyword">this</span>.<span class="function">inBounds</span>(nr, nc)) <span class="keyword">continue</span>;
+
+        <span class="keyword">const</span> ti = <span class="keyword">this</span>.<span class="function">idx</span>(nr, nc);
+        <span class="keyword">const</span> t = <span class="keyword">this</span>.board[ti];
+
+        <span class="comment">// Can move to empty square or capture enemy</span>
+        <span class="keyword">if</span> (!t || t.color !== color) {
+            moves.<span class="function">push</span>({ from: i, to: ti });
+        }
+    }
+}</code></pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h4>Interactive: Knight Move Generation</h4>
+                <div class="controls">
+                    <button onclick="knightDemo.placeKnight()">Place Knight</button>
+                    <button onclick="knightDemo.showMoves()">Show Moves</button>
+                    <button onclick="knightDemo.animate()">Animate</button>
+                    <button onclick="knightDemo.reset()" class="secondary">Reset</button>
+                </div>
+                <div class="visualization">
+                    <div id="knight-board" class="board-viz"></div>
+                    <div id="knight-info" style="margin-top: 1rem;"></div>
+                </div>
+            </div>
+
+            <h3>3.4 Legal Move Generation</h3>
+            <p>Filters pseudo-legal moves to ensure they don't leave the king in check.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-engine.js</span>
+<span class="function">generateLegalMoves</span>(color) {
+    color = color || <span class="keyword">this</span>.turn;
+    <span class="keyword">const</span> pseudoMoves = <span class="keyword">this</span>.<span class="function">generatePseudoMoves</span>(color);
+    <span class="keyword">const</span> legal = [];
+
+    <span class="keyword">for</span> (<span class="keyword">const</span> m <span class="keyword">of</span> pseudoMoves) {
+        <span class="comment">// Try the move</span>
+        <span class="keyword">const</span> undo = <span class="keyword">this</span>.<span class="function">makeMove</span>(m);
+
+        <span class="comment">// Check if king is in check after move</span>
+        <span class="keyword">if</span> (!<span class="keyword">this</span>.<span class="function">isInCheck</span>(color)) {
+            legal.<span class="function">push</span>(m);
+        }
+
+        <span class="comment">// Undo the move</span>
+        <span class="keyword">this</span>.<span class="function">unmakeMove</span>(undo);
+    }
+
+    <span class="keyword">return</span> legal;
+}</code></pre>
+            </div>
+
+            <div class="info-box tip">
+                <h4>Performance Insight</h4>
+                <p>Legal move generation is expensive because it requires making/unmaking every pseudo-legal move. In the middlegame, this can mean testing 30-40 moves. That's why move generation optimization is critical for engine speed.</p>
+            </div>
+        </section>
+
+        <!-- Move Validation -->
+        <section id="move-val" class="section">
+            <h2>4. Move Validation</h2>
+
+            <h3>4.1 Check Detection</h3>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-engine.js</span>
+<span class="function">isSquareAttacked</span>(sq, byColor) {
+    <span class="keyword">const</span> r = <span class="keyword">this</span>.<span class="function">row</span>(sq), c = <span class="keyword">this</span>.<span class="function">col</span>(sq);
+
+    <span class="comment">// Check for knight attacks</span>
+    <span class="keyword">for</span> (<span class="keyword">const</span> [dr, dc] <span class="keyword">of</span> [[-<span class="number">2</span>,-<span class="number">1</span>],[-<span class="number">2</span>,<span class="number">1</span>],[-<span class="number">1</span>,-<span class="number">2</span>],[-<span class="number">1</span>,<span class="number">2</span>],
+                              [<span class="number">1</span>,-<span class="number">2</span>],[<span class="number">1</span>,<span class="number">2</span>],[<span class="number">2</span>,-<span class="number">1</span>],[<span class="number">2</span>,<span class="number">1</span>]]) {
+        <span class="keyword">const</span> nr = r + dr, nc = c + dc;
+        <span class="keyword">if</span> (<span class="keyword">this</span>.<span class="function">inBounds</span>(nr, nc)) {
+            <span class="keyword">const</span> p = <span class="keyword">this</span>.board[<span class="keyword">this</span>.<span class="function">idx</span>(nr, nc)];
+            <span class="keyword">if</span> (p && p.color === byColor && p.piece === PIECE.KNIGHT)
+                <span class="keyword">return</span> <span class="keyword">true</span>;
+        }
+    }
+
+    <span class="comment">// Check for pawn attacks</span>
+    <span class="keyword">const</span> pdir = byColor === COLOR.WHITE ? <span class="number">1</span> : -<span class="number">1</span>;
+    <span class="keyword">for</span> (<span class="keyword">const</span> dc <span class="keyword">of</span> [-<span class="number">1</span>, <span class="number">1</span>]) {
+        <span class="keyword">const</span> nr = r + pdir, nc = c + dc;
+        <span class="keyword">if</span> (<span class="keyword">this</span>.<span class="function">inBounds</span>(nr, nc)) {
+            <span class="keyword">const</span> p = <span class="keyword">this</span>.board[<span class="keyword">this</span>.<span class="function">idx</span>(nr, nc)];
+            <span class="keyword">if</span> (p && p.color === byColor && p.piece === PIECE.PAWN)
+                <span class="keyword">return</span> <span class="keyword">true</span>;
+        }
+    }
+
+    <span class="comment">// Check for sliding pieces (rooks, bishops, queens)</span>
+    <span class="comment">// ... (similar pattern for each direction)</span>
+
+    <span class="keyword">return</span> <span class="keyword">false</span>;
+}
+
+<span class="function">isInCheck</span>(color) {
+    <span class="keyword">const</span> kingSq = <span class="keyword">this</span>.<span class="function">findKing</span>(color);
+    <span class="keyword">if</span> (kingSq < <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">false</span>;
+    <span class="keyword">return</span> <span class="keyword">this</span>.<span class="function">isSquareAttacked</span>(kingSq,
+        color === COLOR.WHITE ? COLOR.BLACK : COLOR.WHITE);
+}</code></pre>
+            </div>
+
+            <h3>4.2 Castling Validation</h3>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// Castling requirements:</span>
+<span class="comment">// 1. King and rook haven't moved</span>
+<span class="comment">// 2. No pieces between king and rook</span>
+<span class="comment">// 3. King not in check</span>
+<span class="comment">// 4. King doesn't pass through or land in check</span>
+
+<span class="keyword">if</span> (color === COLOR.WHITE && i === <span class="number">60</span>) {
+    <span class="comment">// Kingside castling (e1-g1)</span>
+    <span class="keyword">if</span> (<span class="keyword">this</span>.castling.K &&
+        !<span class="keyword">this</span>.board[<span class="number">61</span>] && !<span class="keyword">this</span>.board[<span class="number">62</span>] &&
+        <span class="keyword">this</span>.board[<span class="number">63</span>]?.piece === PIECE.ROOK &&
+        !<span class="keyword">this</span>.<span class="function">isSquareAttacked</span>(<span class="number">60</span>, COLOR.BLACK) &&
+        !<span class="keyword">this</span>.<span class="function">isSquareAttacked</span>(<span class="number">61</span>, COLOR.BLACK) &&
+        !<span class="keyword">this</span>.<span class="function">isSquareAttacked</span>(<span class="number">62</span>, COLOR.BLACK)) {
+        moves.<span class="function">push</span>({ from: <span class="number">60</span>, to: <span class="number">62</span>, castle: <span class="string">'K'</span> });
+    }
+
+    <span class="comment">// Queenside castling (e1-c1)</span>
+    <span class="keyword">if</span> (<span class="keyword">this</span>.castling.Q &&
+        !<span class="keyword">this</span>.board[<span class="number">59</span>] && !<span class="keyword">this</span>.board[<span class="number">58</span>] && !<span class="keyword">this</span>.board[<span class="number">57</span>] &&
+        <span class="keyword">this</span>.board[<span class="number">56</span>]?.piece === PIECE.ROOK &&
+        !<span class="keyword">this</span>.<span class="function">isSquareAttacked</span>(<span class="number">60</span>, COLOR.BLACK) &&
+        !<span class="keyword">this</span>.<span class="function">isSquareAttacked</span>(<span class="number">59</span>, COLOR.BLACK) &&
+        !<span class="keyword">this</span>.<span class="function">isSquareAttacked</span>(<span class="number">58</span>, COLOR.BLACK)) {
+        moves.<span class="function">push</span>({ from: <span class="number">60</span>, to: <span class="number">58</span>, castle: <span class="string">'Q'</span> });
+    }
+}</code></pre>
+            </div>
+
+            <h3>4.3 En Passant</h3>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// En passant is only possible immediately after opponent's pawn double-push</span>
+<span class="function">_pawnMoves</span>(i, r, c, color, moves) {
+    <span class="comment">// ... normal pawn moves ...</span>
+
+    <span class="comment">// Check en passant captures</span>
+    <span class="keyword">for</span> (<span class="keyword">const</span> dc <span class="keyword">of</span> [-<span class="number">1</span>, <span class="number">1</span>]) {
+        <span class="keyword">if</span> (!<span class="keyword">this</span>.<span class="function">inBounds</span>(r + dir, c + dc)) <span class="keyword">continue</span>;
+        <span class="keyword">const</span> ti = <span class="keyword">this</span>.<span class="function">idx</span>(r + dir, c + dc);
+
+        <span class="comment">// If target square is the en passant square</span>
+        <span class="keyword">if</span> (ti === <span class="keyword">this</span>.enPassant) {
+            moves.<span class="function">push</span>({ from: i, to: ti, enPassant: <span class="keyword">true</span> });
+        }
+    }
+}
+
+<span class="comment">// Update en passant square after each move</span>
+<span class="keyword">if</span> (isPawnMove && Math.<span class="function">abs</span>(move.to - move.from) === <span class="number">16</span>) {
+    <span class="comment">// Pawn moved two squares - set en passant target</span>
+    <span class="keyword">this</span>.enPassant = (move.from + move.to) / <span class="number">2</span>;
+} <span class="keyword">else</span> {
+    <span class="keyword">this</span>.enPassant = -<span class="number">1</span>;
+}</code></pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h4>Interactive: Special Moves Visualizer</h4>
+                <div class="controls">
+                    <button onclick="specialMovesDemo.showCastling()">Show Castling</button>
+                    <button onclick="specialMovesDemo.showEnPassant()">Show En Passant</button>
+                    <button onclick="specialMovesDemo.showPromotion()">Show Promotion</button>
+                    <button onclick="specialMovesDemo.reset()" class="secondary">Reset</button>
+                </div>
+                <div class="visualization">
+                    <div id="special-board" class="board-viz"></div>
+                    <div id="special-info" style="margin-top: 1rem;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game State Management -->
+        <section id="game-state" class="section">
+            <h2>5. Game State Management</h2>
+
+            <h3>5.1 FEN (Forsyth-Edwards Notation)</h3>
+            <p>Standard notation for describing a chess position.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// FEN Format: position turn castling enpassant halfmove fullmove</span>
+<span class="comment">// Example: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"</span>
+
+<span class="function">toFEN</span>() {
+    <span class="keyword">let</span> fen = <span class="string">''</span>;
+
+    <span class="comment">// 1. Piece placement (from rank 8 to rank 1)</span>
+    <span class="keyword">for</span> (<span class="keyword">let</span> r = <span class="number">0</span>; r < <span class="number">8</span>; r++) {
+        <span class="keyword">let</span> empty = <span class="number">0</span>;
+        <span class="keyword">for</span> (<span class="keyword">let</span> c = <span class="number">0</span>; c < <span class="number">8</span>; c++) {
+            <span class="keyword">const</span> p = <span class="keyword">this</span>.board[r * <span class="number">8</span> + c];
+            <span class="keyword">if</span> (!p) {
+                empty++;
+            } <span class="keyword">else</span> {
+                <span class="keyword">if</span> (empty) { fen += empty; empty = <span class="number">0</span>; }
+                fen += p.color === COLOR.WHITE ?
+                    p.piece.<span class="function">toUpperCase</span>() : p.piece;
+            }
+        }
+        <span class="keyword">if</span> (empty) fen += empty;
+        <span class="keyword">if</span> (r < <span class="number">7</span>) fen += <span class="string">'/'</span>;
+    }
+
+    <span class="comment">// 2. Active color</span>
+    fen += <span class="string">' '</span> + <span class="keyword">this</span>.turn;
+
+    <span class="comment">// 3. Castling availability</span>
+    <span class="keyword">let</span> cas = <span class="string">''</span>;
+    <span class="keyword">if</span> (<span class="keyword">this</span>.castling.K) cas += <span class="string">'K'</span>;
+    <span class="keyword">if</span> (<span class="keyword">this</span>.castling.Q) cas += <span class="string">'Q'</span>;
+    <span class="keyword">if</span> (<span class="keyword">this</span>.castling.k) cas += <span class="string">'k'</span>;
+    <span class="keyword">if</span> (<span class="keyword">this</span>.castling.q) cas += <span class="string">'q'</span>;
+    fen += <span class="string">' '</span> + (cas || <span class="string">'-'</span>);
+
+    <span class="comment">// 4. En passant target square</span>
+    fen += <span class="string">' '</span> + (<span class="keyword">this</span>.enPassant >= <span class="number">0</span> ?
+        <span class="keyword">this</span>.<span class="function">indexToAlgebraic</span>(<span class="keyword">this</span>.enPassant) : <span class="string">'-'</span>);
+
+    <span class="comment">// 5. Halfmove clock (for 50-move rule)</span>
+    fen += <span class="string">' '</span> + <span class="keyword">this</span>.halfmove;
+
+    <span class="comment">// 6. Fullmove number</span>
+    fen += <span class="string">' '</span> + <span class="keyword">this</span>.fullmove;
+
+    <span class="keyword">return</span> fen;
+}</code></pre>
+            </div>
+
+            <h3>5.2 Make/Unmake Move Pattern</h3>
+            <p>Critical for search algorithms: efficiently apply and reverse moves without copying the board.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-engine.js</span>
+<span class="function">makeMove</span>(move) {
+    <span class="comment">// Save state for undo</span>
+    <span class="keyword">const</span> saved = {
+        board: [...<span class="keyword">this</span>.board],
+        turn: <span class="keyword">this</span>.turn,
+        castling: { ...<span class="keyword">this</span>.castling },
+        enPassant: <span class="keyword">this</span>.enPassant,
+        halfmove: <span class="keyword">this</span>.halfmove,
+        fullmove: <span class="keyword">this</span>.fullmove
+    };
+
+    <span class="keyword">const</span> piece = <span class="keyword">this</span>.board[move.from];
+    <span class="keyword">const</span> captured = <span class="keyword">this</span>.board[move.to];
+
+    <span class="comment">// Move the piece</span>
+    <span class="keyword">this</span>.board[move.to] = piece;
+    <span class="keyword">this</span>.board[move.from] = <span class="keyword">null</span>;
+
+    <span class="comment">// Handle special moves (castling, en passant, promotion)</span>
+    <span class="keyword">if</span> (move.castle) <span class="keyword">this</span>.<span class="function">_handleCastling</span>(move);
+    <span class="keyword">if</span> (move.enPassant) <span class="keyword">this</span>.<span class="function">_handleEnPassant</span>(move);
+    <span class="keyword">if</span> (move.promotion) <span class="keyword">this</span>.board[move.to].piece = move.promotion;
+
+    <span class="comment">// Update game state</span>
+    <span class="keyword">this</span>.<span class="function">_updateCastlingRights</span>(move);
+    <span class="keyword">this</span>.<span class="function">_updateEnPassant</span>(move);
+    <span class="keyword">this</span>.turn = <span class="keyword">this</span>.turn === COLOR.WHITE ? COLOR.BLACK : COLOR.WHITE;
+
+    <span class="keyword">return</span> { saved, captured, move };
+}
+
+<span class="function">unmakeMove</span>(undoData) {
+    <span class="keyword">const</span> s = undoData.saved;
+    <span class="keyword">this</span>.board = s.board;
+    <span class="keyword">this</span>.turn = s.turn;
+    <span class="keyword">this</span>.castling = s.castling;
+    <span class="keyword">this</span>.enPassant = s.enPassant;
+    <span class="keyword">this</span>.halfmove = s.halfmove;
+    <span class="keyword">this</span>.fullmove = s.fullmove;
+}</code></pre>
+            </div>
+
+            <div class="info-box warning">
+                <h4>Performance Critical</h4>
+                <p>Make/unmake is called millions of times during search. In the AI Chess Solver, searching to depth 5 can explore 100,000+ positions. Even small optimizations here (like avoiding full board copies) have massive impact.</p>
+            </div>
+
+            <h3>5.3 Game Termination Detection</h3>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="function">getGameStatus</span>() {
+    <span class="comment">// Checkmate: in check with no legal moves</span>
+    <span class="keyword">if</span> (<span class="keyword">this</span>.<span class="function">isCheckmate</span>()) {
+        <span class="keyword">return</span> {
+            over: <span class="keyword">true</span>,
+            result: <span class="keyword">this</span>.turn === COLOR.WHITE ? <span class="string">'black'</span> : <span class="string">'white'</span>,
+            reason: <span class="string">'checkmate'</span>
+        };
+    }
+
+    <span class="comment">// Stalemate: not in check but no legal moves</span>
+    <span class="keyword">if</span> (<span class="keyword">this</span>.<span class="function">isStalemate</span>()) {
+        <span class="keyword">return</span> { over: <span class="keyword">true</span>, result: <span class="string">'draw'</span>, reason: <span class="string">'stalemate'</span> };
+    }
+
+    <span class="comment">// Fifty-move rule</span>
+    <span class="keyword">if</span> (<span class="keyword">this</span>.halfmove >= <span class="number">100</span>) {
+        <span class="keyword">return</span> { over: <span class="keyword">true</span>, result: <span class="string">'draw'</span>, reason: <span class="string">'fifty-move'</span> };
+    }
+
+    <span class="comment">// Threefold repetition</span>
+    <span class="keyword">if</span> (<span class="keyword">this</span>.<span class="function">isThreefoldRepetition</span>()) {
+        <span class="keyword">return</span> { over: <span class="keyword">true</span>, result: <span class="string">'draw'</span>, reason: <span class="string">'repetition'</span> };
+    }
+
+    <span class="comment">// Insufficient material</span>
+    <span class="keyword">if</span> (<span class="keyword">this</span>.<span class="function">isInsufficientMaterial</span>()) {
+        <span class="keyword">return</span> { over: <span class="keyword">true</span>, result: <span class="string">'draw'</span>, reason: <span class="string">'insufficient'</span> };
+    }
+
+    <span class="keyword">return</span> { over: <span class="keyword">false</span>, inCheck: <span class="keyword">this</span>.<span class="function">isInCheck</span>(<span class="keyword">this</span>.turn) };
+}</code></pre>
+            </div>
+        </section>
+
+        <!-- Search Algorithms -->
+        <section id="search" class="section">
+            <h2>6. Search Algorithms</h2>
+
+            <h3>6.1 Minimax Algorithm</h3>
+            <p>The foundation of chess AI: recursively explore the game tree, assuming both players play optimally.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-ai.js</span>
+<span class="function">minimax</span>(engine, depth, alpha, beta, maximizing) {
+    <span class="keyword">this</span>.nodesSearched++;
+
+    <span class="comment">// Base case: depth 0 or game over</span>
+    <span class="keyword">if</span> (depth === <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">this</span>.<span class="function">evaluate</span>(engine);
+
+    <span class="keyword">const</span> status = engine.<span class="function">getGameStatus</span>();
+    <span class="keyword">if</span> (status.over) {
+        <span class="keyword">if</span> (status.result === <span class="string">'draw'</span>) <span class="keyword">return</span> <span class="number">0</span>;
+        <span class="comment">// Return mate score with depth bonus (prefer faster mates)</span>
+        <span class="keyword">return</span> maximizing ? -<span class="number">99999</span> - depth : <span class="number">99999</span> + depth;
+    }
+
+    <span class="keyword">let</span> moves = engine.<span class="function">generateLegalMoves</span>();
+    moves = <span class="keyword">this</span>.<span class="function">orderMoves</span>(engine, moves);  <span class="comment">// Critical for alpha-beta</span>
+
+    <span class="keyword">if</span> (maximizing) {
+        <span class="keyword">let</span> best = -<span class="class">Infinity</span>;
+        <span class="keyword">for</span> (<span class="keyword">const</span> m <span class="keyword">of</span> moves) {
+            <span class="keyword">const</span> u = engine.<span class="function">makeMove</span>(m);
+            best = Math.<span class="function">max</span>(best, <span class="keyword">this</span>.<span class="function">minimax</span>(engine, depth - <span class="number">1</span>,
+                                               alpha, beta, <span class="keyword">false</span>));
+            engine.<span class="function">unmakeMove</span>(u);
+
+            <span class="comment">// Alpha-beta pruning</span>
+            alpha = Math.<span class="function">max</span>(alpha, best);
+            <span class="keyword">if</span> (beta <= alpha) <span class="keyword">break</span>;  <span class="comment">// Beta cutoff</span>
+        }
+        <span class="keyword">return</span> best;
+    } <span class="keyword">else</span> {
+        <span class="keyword">let</span> best = <span class="class">Infinity</span>;
+        <span class="keyword">for</span> (<span class="keyword">const</span> m <span class="keyword">of</span> moves) {
+            <span class="keyword">const</span> u = engine.<span class="function">makeMove</span>(m);
+            best = Math.<span class="function">min</span>(best, <span class="keyword">this</span>.<span class="function">minimax</span>(engine, depth - <span class="number">1</span>,
+                                               alpha, beta, <span class="keyword">true</span>));
+            engine.<span class="function">unmakeMove</span>(u);
+
+            <span class="comment">// Alpha-beta pruning</span>
+            beta = Math.<span class="function">min</span>(beta, best);
+            <span class="keyword">if</span> (beta <= alpha) <span class="keyword">break</span>;  <span class="comment">// Alpha cutoff</span>
+        }
+        <span class="keyword">return</span> best;
+    }
+}</code></pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h4>Interactive: Minimax Tree Visualization</h4>
+                <div class="controls">
+                    <button onclick="minimaxDemo.step()">Step Forward</button>
+                    <button onclick="minimaxDemo.autoPlay()">Auto Play</button>
+                    <button onclick="minimaxDemo.reset()" class="secondary">Reset</button>
+                </div>
+                <div class="visualization">
+                    <div id="minimax-tree" class="tree-viz"></div>
+                </div>
+                <div class="algorithm-stepper">
+                    <div id="minimax-steps"></div>
+                </div>
+            </div>
+
+            <h3>6.2 Alpha-Beta Pruning</h3>
+            <p>Optimization that eliminates branches that cannot affect the final decision, typically reducing nodes searched by 50-90%.</p>
+
+            <div class="code-block">
+                <span class="code-label">Pseudocode</span>
+                <pre><code><span class="comment">// Alpha: best score maximizer can guarantee</span>
+<span class="comment">// Beta: best score minimizer can guarantee</span>
+<span class="comment">// If beta ≤ alpha, remaining moves don't matter</span>
+
+<span class="keyword">function</span> <span class="function">alphaBeta</span>(position, depth, alpha, beta, maximizing):
+    <span class="keyword">if</span> depth == <span class="number">0</span> <span class="keyword">or</span> gameOver:
+        <span class="keyword">return</span> <span class="function">evaluate</span>(position)
+
+    <span class="keyword">if</span> maximizing:
+        best = -∞
+        <span class="keyword">for</span> <span class="keyword">each</span> move:
+            score = <span class="function">alphaBeta</span>(move, depth-<span class="number">1</span>, alpha, beta, <span class="keyword">false</span>)
+            best = <span class="function">max</span>(best, score)
+            alpha = <span class="function">max</span>(alpha, best)
+            <span class="keyword">if</span> beta ≤ alpha:
+                <span class="keyword">break</span>  <span class="comment">// Beta cutoff - minimizer won't allow this</span>
+        <span class="keyword">return</span> best
+    <span class="keyword">else</span>:
+        best = +∞
+        <span class="keyword">for</span> <span class="keyword">each</span> move:
+            score = <span class="function">alphaBeta</span>(move, depth-<span class="number">1</span>, alpha, beta, <span class="keyword">true</span>)
+            best = <span class="function">min</span>(best, score)
+            beta = <span class="function">min</span>(beta, best)
+            <span class="keyword">if</span> beta ≤ alpha:
+                <span class="keyword">break</span>  <span class="comment">// Alpha cutoff - maximizer won't allow this</span>
+        <span class="keyword">return</span> best</code></pre>
+            </div>
+
+            <h3>6.3 Search Depth Analysis</h3>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value">~20</div>
+                    <div class="stat-label">Avg Legal Moves</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">~35</div>
+                    <div class="stat-label">Midgame Moves</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">20^5</div>
+                    <div class="stat-label">Depth 5 Nodes<br>(3.2 million)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">60-90%</div>
+                    <div class="stat-label">Pruning Reduction</div>
+                </div>
+            </div>
+
+            <table class="complexity-table">
+                <thead>
+                    <tr>
+                        <th>Depth</th>
+                        <th>Nodes (No Pruning)</th>
+                        <th>Nodes (Alpha-Beta)</th>
+                        <th>Time (Approx)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2</td>
+                        <td>400</td>
+                        <td>~100</td>
+                        <td>< 10ms</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>8,000</td>
+                        <td>~600</td>
+                        <td>~50ms</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>160,000</td>
+                        <td>~4,000</td>
+                        <td>~200ms</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>3,200,000</td>
+                        <td>~25,000</td>
+                        <td>~1s</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>64,000,000</td>
+                        <td>~150,000</td>
+                        <td>~5s</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Evaluation Functions -->
+        <section id="evaluation" class="section">
+            <h2>7. Evaluation Functions</h2>
+            <p>The "brain" of the chess engine: assigning a numerical score to any position.</p>
+
+            <h3>7.1 Material Evaluation</h3>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-ai.js</span>
+<span class="keyword">static</span> <span class="constant">PIECE_VALUES</span> = {
+    p: <span class="number">100</span>,    <span class="comment">// Pawn</span>
+    n: <span class="number">320</span>,    <span class="comment">// Knight</span>
+    b: <span class="number">330</span>,    <span class="comment">// Bishop (slightly better than knight)</span>
+    r: <span class="number">500</span>,    <span class="comment">// Rook</span>
+    q: <span class="number">900</span>,    <span class="comment">// Queen</span>
+    k: <span class="number">20000</span>   <span class="comment">// King (effectively infinite)</span>
+};
+
+<span class="comment">// Simple material count</span>
+<span class="keyword">let</span> score = <span class="number">0</span>;
+<span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i < <span class="number">64</span>; i++) {
+    <span class="keyword">const</span> p = engine.board[i];
+    <span class="keyword">if</span> (!p) <span class="keyword">continue</span>;
+    <span class="keyword">const</span> val = ChessAI.PIECE_VALUES[p.piece];
+    score += p.color === COLOR.WHITE ? val : -val;
+}</code></pre>
+            </div>
+
+            <h3>7.2 Piece-Square Tables (PST)</h3>
+            <p>Reward pieces on good squares. For example, knights in the center are stronger than on the rim.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// Knight piece-square table (from white's perspective)</span>
+<span class="comment">// Values encourage central placement</span>
+<span class="keyword">static</span> <span class="constant">PST</span> = {
+    n: [
+        -<span class="number">50</span>,-<span class="number">40</span>,-<span class="number">30</span>,-<span class="number">30</span>,-<span class="number">30</span>,-<span class="number">30</span>,-<span class="number">40</span>,-<span class="number">50</span>,  <span class="comment">// Rank 8 (back rank - bad)</span>
+        -<span class="number">40</span>,-<span class="number">20</span>,  <span class="number">0</span>,  <span class="number">0</span>,  <span class="number">0</span>,  <span class="number">0</span>,-<span class="number">20</span>,-<span class="number">40</span>,
+        -<span class="number">30</span>,  <span class="number">0</span>, <span class="number">10</span>, <span class="number">15</span>, <span class="number">15</span>, <span class="number">10</span>,  <span class="number">0</span>,-<span class="number">30</span>,
+        -<span class="number">30</span>,  <span class="number">5</span>, <span class="number">15</span>, <span class="number">20</span>, <span class="number">20</span>, <span class="number">15</span>,  <span class="number">5</span>,-<span class="number">30</span>,  <span class="comment">// Center ranks (good)</span>
+        -<span class="number">30</span>,  <span class="number">0</span>, <span class="number">15</span>, <span class="number">20</span>, <span class="number">20</span>, <span class="number">15</span>,  <span class="number">0</span>,-<span class="number">30</span>,
+        -<span class="number">30</span>,  <span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>, <span class="number">15</span>, <span class="number">10</span>,  <span class="number">5</span>,-<span class="number">30</span>,
+        -<span class="number">40</span>,-<span class="number">20</span>,  <span class="number">0</span>,  <span class="number">5</span>,  <span class="number">5</span>,  <span class="number">0</span>,-<span class="number">20</span>,-<span class="number">40</span>,
+        -<span class="number">50</span>,-<span class="number">40</span>,-<span class="number">30</span>,-<span class="number">30</span>,-<span class="number">30</span>,-<span class="number">30</span>,-<span class="number">40</span>,-<span class="number">50</span>   <span class="comment">// Rank 1</span>
+    ]
+};
+
+<span class="comment">// Apply PST bonus</span>
+<span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i < <span class="number">64</span>; i++) {
+    <span class="keyword">const</span> p = engine.board[i];
+    <span class="keyword">if</span> (!p) <span class="keyword">continue</span>;
+
+    <span class="keyword">const</span> pst = ChessAI.PST[p.piece];
+    <span class="keyword">if</span> (p.color === COLOR.WHITE) {
+        score += pst[i];
+    } <span class="keyword">else</span> {
+        <span class="comment">// Mirror index for black</span>
+        <span class="keyword">const</span> mi = (<span class="number">7</span> - Math.<span class="function">floor</span>(i / <span class="number">8</span>)) * <span class="number">8</span> + (i % <span class="number">8</span>);
+        score -= pst[mi];
+    }
+}</code></pre>
+            </div>
+
+            <h3>7.3 Strategy-Specific Weights</h3>
+            <p>Different playing styles emerge from different evaluation weights.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-ai.js - Strategy profiles</span>
+<span class="keyword">static</span> <span class="constant">STRATEGY_WEIGHTS</span> = {
+    aggressive: {
+        material: <span class="number">1.0</span>,
+        position: <span class="number">0.8</span>,
+        mobility: <span class="number">1.5</span>,
+        attack: <span class="number">2.0</span>,      <span class="comment">// High attack bonus</span>
+        kingSafety: <span class="number">0.5</span>,
+        centerControl: <span class="number">1.0</span>
+    },
+    positional: {
+        material: <span class="number">1.0</span>,
+        position: <span class="number">1.3</span>,      <span class="comment">// High position bonus</span>
+        mobility: <span class="number">1.0</span>,
+        attack: <span class="number">0.8</span>,
+        kingSafety: <span class="number">1.2</span>,
+        centerControl: <span class="number">1.5</span>  <span class="comment">// High center control</span>
+    },
+    defensive: {
+        material: <span class="number">1.2</span>,      <span class="comment">// Values material safety</span>
+        position: <span class="number">1.0</span>,
+        mobility: <span class="number">0.8</span>,
+        attack: <span class="number">0.5</span>,
+        kingSafety: <span class="number">2.0</span>,    <span class="comment">// High king safety</span>
+        centerControl: <span class="number">0.8</span>
+    }
+};
+
+<span class="comment">// Evaluation with strategy weights</span>
+<span class="function">evaluate</span>(engine) {
+    <span class="keyword">const</span> w = ChessAI.STRATEGY_WEIGHTS[<span class="keyword">this</span>.strategy];
+    <span class="keyword">let</span> score = <span class="number">0</span>;
+
+    <span class="comment">// Material * weight</span>
+    score += <span class="keyword">this</span>.<span class="function">materialScore</span>(engine) * w.material;
+
+    <span class="comment">// Position * weight</span>
+    score += <span class="keyword">this</span>.<span class="function">positionScore</span>(engine) * w.position;
+
+    <span class="comment">// Mobility * weight</span>
+    score += <span class="keyword">this</span>.<span class="function">mobilityScore</span>(engine) * w.mobility;
+
+    <span class="comment">// Attack * weight</span>
+    score += <span class="keyword">this</span>.<span class="function">attackScore</span>(engine) * w.attack;
+
+    <span class="comment">// King safety * weight</span>
+    score += <span class="keyword">this</span>.<span class="function">kingSafetyScore</span>(engine) * w.kingSafety;
+
+    <span class="comment">// Center control * weight</span>
+    score += <span class="keyword">this</span>.<span class="function">centerControlScore</span>(engine) * w.centerControl;
+
+    <span class="keyword">return</span> score;
+}</code></pre>
+            </div>
+
+            <h3>7.4 Advanced Evaluation Factors</h3>
+
+            <h4>Mobility</h4>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// Count legal moves (measure of piece activity)</span>
+<span class="keyword">const</span> wMoves = engine.<span class="function">generatePseudoMoves</span>(COLOR.WHITE);
+<span class="keyword">const</span> bMoves = engine.<span class="function">generatePseudoMoves</span>(COLOR.BLACK);
+score += (wMoves.length - bMoves.length) * <span class="number">3</span> * w.mobility;</code></pre>
+            </div>
+
+            <h4>King Safety</h4>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// Pawn shield bonus</span>
+<span class="function">_kingSafety</span>(engine, kingSq, color) {
+    <span class="keyword">let</span> safety = <span class="number">0</span>;
+    <span class="keyword">const</span> kr = Math.<span class="function">floor</span>(kingSq / <span class="number">8</span>), kc = kingSq % <span class="number">8</span>;
+    <span class="keyword">const</span> dir = color === COLOR.WHITE ? -<span class="number">1</span> : <span class="number">1</span>;
+
+    <span class="comment">// Check for pawns in front of king</span>
+    <span class="keyword">for</span> (<span class="keyword">let</span> dc = -<span class="number">1</span>; dc <= <span class="number">1</span>; dc++) {
+        <span class="keyword">const</span> nr = kr + dir, nc = kc + dc;
+        <span class="keyword">if</span> (nr >= <span class="number">0</span> && nr < <span class="number">8</span> && nc >= <span class="number">0</span> && nc < <span class="number">8</span>) {
+            <span class="keyword">const</span> p = engine.board[nr * <span class="number">8</span> + nc];
+            <span class="keyword">if</span> (p && p.color === color && p.piece === PIECE.PAWN) {
+                safety += <span class="number">10</span>;  <span class="comment">// Pawn shield bonus</span>
+            }
+        }
+    }
+    <span class="keyword">return</span> safety;
+}</code></pre>
+            </div>
+
+            <h4>Center Control</h4>
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// Bonus for controlling d4, d5, e4, e5</span>
+<span class="keyword">const</span> centerSqs = [<span class="number">27</span>, <span class="number">28</span>, <span class="number">35</span>, <span class="number">36</span>];  <span class="comment">// d4, e4, d5, e5</span>
+<span class="keyword">for</span> (<span class="keyword">const</span> sq <span class="keyword">of</span> centerSqs) {
+    <span class="keyword">const</span> p = engine.board[sq];
+    <span class="keyword">if</span> (p) {
+        score += (p.color === COLOR.WHITE ? <span class="number">15</span> : -<span class="number">15</span>) * w.centerControl;
+    }
+}</code></pre>
+            </div>
+        </section>
+
+        <!-- Performance Optimizations -->
+        <section id="optimization" class="section">
+            <h2>8. Performance Optimizations</h2>
+
+            <h3>8.1 Move Ordering</h3>
+            <p>Critical for alpha-beta efficiency. Search good moves first to maximize cutoffs.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="comment">// From chess-ai.js - MVV-LVA (Most Valuable Victim - Least Valuable Attacker)</span>
+<span class="function">orderMoves</span>(engine, moves) {
+    <span class="keyword">return</span> moves.<span class="function">sort</span>((a, b) => {
+        <span class="keyword">let</span> sa = <span class="number">0</span>, sb = <span class="number">0</span>;
+
+        <span class="comment">// 1. Captures (MVV-LVA)</span>
+        <span class="keyword">const</span> ca = engine.board[a.to], cb = engine.board[b.to];
+        <span class="keyword">if</span> (ca) {
+            <span class="comment">// Victim value * 10 - Attacker value</span>
+            sa += ChessAI.PIECE_VALUES[ca.piece] * <span class="number">10</span> -
+                  ChessAI.PIECE_VALUES[engine.board[a.from].piece];
+        }
+        <span class="keyword">if</span> (cb) {
+            sb += ChessAI.PIECE_VALUES[cb.piece] * <span class="number">10</span> -
+                  ChessAI.PIECE_VALUES[engine.board[b.from].piece];
+        }
+
+        <span class="comment">// 2. Promotions</span>
+        <span class="keyword">if</span> (a.promotion) sa += ChessAI.PIECE_VALUES[a.promotion] * <span class="number">10</span>;
+        <span class="keyword">if</span> (b.promotion) sb += ChessAI.PIECE_VALUES[b.promotion] * <span class="number">10</span>;
+
+        <span class="comment">// 3. Castling (usually good)</span>
+        <span class="keyword">if</span> (a.castle) sa += <span class="number">60</span>;
+        <span class="keyword">if</span> (b.castle) sb += <span class="number">60</span>;
+
+        <span class="keyword">return</span> sb - sa;  <span class="comment">// Higher score first</span>
+    });
+}</code></pre>
+            </div>
+
+            <div class="info-box tip">
+                <h4>Move Ordering Impact</h4>
+                <p>Good move ordering can reduce nodes searched by 90%. Example: At depth 5, ordering reduces 3.2 million nodes to 320,000 nodes.</p>
+            </div>
+
+            <h3>8.2 Transposition Tables</h3>
+            <p>Cache previously evaluated positions to avoid redundant work.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="keyword">class</span> <span class="class">TranspositionTable</span> {
+    <span class="function">constructor</span>(sizeMB = <span class="number">64</span>) {
+        <span class="comment">// Each entry: ~50 bytes</span>
+        <span class="keyword">this</span>.size = (sizeMB * <span class="number">1024</span> * <span class="number">1024</span>) / <span class="number">50</span>;
+        <span class="keyword">this</span>.table = <span class="keyword">new</span> <span class="class">Map</span>();
+    }
+
+    <span class="function">store</span>(hash, depth, score, flag, bestMove) {
+        <span class="keyword">if</span> (<span class="keyword">this</span>.table.size >= <span class="keyword">this</span>.size) {
+            <span class="comment">// Replacement strategy: replace if deeper search</span>
+            <span class="keyword">const</span> existing = <span class="keyword">this</span>.table.<span class="function">get</span>(hash);
+            <span class="keyword">if</span> (existing && existing.depth > depth) <span class="keyword">return</span>;
+        }
+
+        <span class="keyword">this</span>.table.<span class="function">set</span>(hash, { depth, score, flag, bestMove });
+    }
+
+    <span class="function">probe</span>(hash, depth, alpha, beta) {
+        <span class="keyword">const</span> entry = <span class="keyword">this</span>.table.<span class="function">get</span>(hash);
+        <span class="keyword">if</span> (!entry || entry.depth < depth) <span class="keyword">return</span> <span class="keyword">null</span>;
+
+        <span class="comment">// Check if we can use cached score</span>
+        <span class="keyword">if</span> (entry.flag === <span class="string">'EXACT'</span>) <span class="keyword">return</span> entry.score;
+        <span class="keyword">if</span> (entry.flag === <span class="string">'LOWERBOUND'</span> && entry.score >= beta) <span class="keyword">return</span> entry.score;
+        <span class="keyword">if</span> (entry.flag === <span class="string">'UPPERBOUND'</span> && entry.score <= alpha) <span class="keyword">return</span> entry.score;
+
+        <span class="keyword">return</span> <span class="keyword">null</span>;
+    }
+}
+
+<span class="comment">// Usage in minimax</span>
+<span class="function">minimax</span>(engine, depth, alpha, beta, maximizing) {
+    <span class="keyword">const</span> hash = engine.<span class="function">zobristHash</span>();
+
+    <span class="comment">// Check transposition table</span>
+    <span class="keyword">const</span> ttScore = <span class="keyword">this</span>.tt.<span class="function">probe</span>(hash, depth, alpha, beta);
+    <span class="keyword">if</span> (ttScore !== <span class="keyword">null</span>) <span class="keyword">return</span> ttScore;
+
+    <span class="comment">// ... minimax search ...</span>
+
+    <span class="comment">// Store in transposition table</span>
+    <span class="keyword">const</span> flag = score <= alpha ? <span class="string">'UPPERBOUND'</span> :
+                 score >= beta ? <span class="string">'LOWERBOUND'</span> : <span class="string">'EXACT'</span>;
+    <span class="keyword">this</span>.tt.<span class="function">store</span>(hash, depth, score, flag, bestMove);
+
+    <span class="keyword">return</span> score;
+}</code></pre>
+            </div>
+
+            <h3>8.3 Iterative Deepening</h3>
+            <p>Search depth 1, then 2, then 3, etc. Surprisingly faster due to better move ordering.</p>
+
+            <div class="code-block">
+                <span class="code-label">JavaScript</span>
+                <pre><code><span class="function">iterativeDeepening</span>(engine, maxDepth, timeLimit) {
+    <span class="keyword">let</span> bestMove = <span class="keyword">null</span>;
+    <span class="keyword">const</span> startTime = performance.<span class="function">now</span>();
+
+    <span class="keyword">for</span> (<span class="keyword">let</span> depth = <span class="number">1</span>; depth <= maxDepth; depth++) {
+        <span class="comment">// Time check</span>
+        <span class="keyword">if</span> (performance.<span class="function">now</span>() - startTime > timeLimit) <span class="keyword">break</span>;
+
+        <span class="comment">// Search at current depth</span>
+        <span class="keyword">const</span> result = <span class="keyword">this</span>.<span class="function">findBestMove</span>(engine, depth);
+
+        <span class="comment">// Always have a move (from previous iteration)</span>
+        <span class="keyword">if</span> (result.move) bestMove = result.move;
+
+        <span class="comment">// Aspiration windows can be added here</span>
+        console.<span class="function">log</span>(<span class="string">`Depth ${depth}: ${result.score} (${result.nodes} nodes)`</span>);
+    }
+
+    <span class="keyword">return</span> bestMove;
+}
+
+<span class="comment">// Benefits:</span>
+<span class="comment">// 1. Always have a move (even if time runs out)</span>
+<span class="comment">// 2. Better move ordering from previous iteration</span>
+<span class="comment">// 3. Typically only 10-20% overhead</span></code></pre>
+            </div>
+
+            <h3>8.4 Optimization Comparison</h3>
+
+            <table class="complexity-table">
+                <thead>
+                    <tr>
+                        <th>Optimization</th>
+                        <th>Nodes Reduced</th>
+                        <th>Implementation Complexity</th>
+                        <th>Memory Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Alpha-Beta Pruning</td>
+                        <td>50-90%</td>
+                        <td>Low</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td>Move Ordering</td>
+                        <td>80-95% (with AB)</td>
+                        <td>Low</td>
+                        <td>Minimal</td>
+                    </tr>
+                    <tr>
+                        <td>Transposition Tables</td>
+                        <td>30-60%</td>
+                        <td>Medium</td>
+                        <td>High (64-256 MB)</td>
+                    </tr>
+                    <tr>
+                        <td>Iterative Deepening</td>
+                        <td>10-20% overhead</td>
+                        <td>Low</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td>Quiescence Search</td>
+                        <td>Improves quality</td>
+                        <td>Medium</td>
+                        <td>None</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>8.5 Performance Metrics from AI Chess Solver</h3>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value">4-5</div>
+                    <div class="stat-label">Default Search Depth</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">~25k</div>
+                    <div class="stat-label">Nodes/Move (depth 5)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">~1s</div>
+                    <div class="stat-label">Average Think Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">85%+</div>
+                    <div class="stat-label">Win Rate vs Random</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p>Built with vanilla JavaScript • No external dependencies</p>
+            <p>Based on the <strong>AI Chess Solver</strong> project</p>
+        </div>
+    </div>
+
+    <script>
+        // Utility: Create board
+        function createBoard(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for (let i = 0; i < 64; i++) {
+                const square = document.createElement('div');
+                square.className = 'square';
+                square.classList.add((Math.floor(i / 8) + (i % 8)) % 2 === 0 ? 'light' : 'dark');
+                square.dataset.index = i;
+                const label = document.createElement('span');
+                label.className = 'square-label';
+                label.textContent = i;
+                square.appendChild(label);
+                container.appendChild(square);
+            }
+            return container;
+        }
+
+        // Array Demo
+        const arrayDemo = {
+            board: null,
+            init() {
+                this.board = createBoard('array-board');
+            },
+            highlightSquare() {
+                const squares = this.board.querySelectorAll('.square');
+                squares.forEach(sq => {
+                    sq.classList.remove('highlight');
+                    sq.textContent = sq.querySelector('.square-label')?.textContent || '';
+                });
+
+                const idx = Math.floor(Math.random() * 64);
+                const square = squares[idx];
+                square.classList.add('highlight');
+                square.textContent = '♞';
+
+                const row = Math.floor(idx / 8);
+                const col = idx % 8;
+                document.getElementById('array-info').innerHTML = `
+                    <strong>Index:</strong> ${idx}<br>
+                    <strong>Row:</strong> ${row} (rank ${8-row})<br>
+                    <strong>Col:</strong> ${col} (file ${'abcdefgh'[col]})<br>
+                    <strong>Formula:</strong> row × 8 + col = ${row} × 8 + ${col} = ${idx}
+                `;
+            },
+            showIndices() {
+                const labels = this.board.querySelectorAll('.square-label');
+                labels.forEach(l => l.style.display = l.style.display === 'none' ? 'block' : 'none');
+            },
+            reset() {
+                const squares = this.board.querySelectorAll('.square');
+                squares.forEach(sq => {
+                    sq.classList.remove('highlight');
+                    sq.textContent = '';
+                    const label = document.createElement('span');
+                    label.className = 'square-label';
+                    label.textContent = sq.dataset.index;
+                    sq.appendChild(label);
+                });
+                document.getElementById('array-info').textContent = '';
+            }
+        };
+
+        // Bitboard Demo
+        const bitboardDemo = {
+            bitboard: 0n,
+            container: null,
+            init() {
+                this.container = document.getElementById('bitboard-display');
+                this.render();
+            },
+            render() {
+                this.container.innerHTML = '';
+                for (let i = 0; i < 64; i++) {
+                    const bit = document.createElement('div');
+                    bit.className = 'bit';
+                    const isSet = (this.bitboard >> BigInt(i)) & 1n;
+                    bit.textContent = isSet ? '1' : '0';
+                    if (isSet) bit.classList.add('set');
+                    this.container.appendChild(bit);
+                }
+                document.getElementById('bitboard-value').textContent =
+                    'Bitboard: 0x' + this.bitboard.toString(16).toUpperCase().padStart(16, '0');
+            },
+            showPawns() {
+                this.bitboard = 0xFF00n; // Rank 2
+                this.render();
+            },
+            showKnights() {
+                this.bitboard = 0x42n; // b1, g1
+                this.render();
+            },
+            toggleSquare() {
+                const sq = Math.floor(Math.random() * 64);
+                this.bitboard ^= (1n << BigInt(sq));
+                this.render();
+            },
+            reset() {
+                this.bitboard = 0n;
+                this.render();
+            }
+        };
+
+        // Knight Demo
+        const knightDemo = {
+            board: null,
+            knightPos: -1,
+            init() {
+                this.board = createBoard('knight-board');
+            },
+            placeKnight() {
+                this.reset();
+                this.knightPos = Math.floor(Math.random() * 64);
+                const squares = this.board.querySelectorAll('.square');
+                squares[this.knightPos].textContent = '♞';
+                document.getElementById('knight-info').innerHTML =
+                    `Knight placed at square ${this.knightPos}`;
+            },
+            showMoves() {
+                if (this.knightPos < 0) {
+                    this.placeKnight();
+                }
+
+                const squares = this.board.querySelectorAll('.square');
+                const r = Math.floor(this.knightPos / 8);
+                const c = this.knightPos % 8;
+                const offsets = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+                let count = 0;
+
+                offsets.forEach(([dr, dc]) => {
+                    const nr = r + dr;
+                    const nc = c + dc;
+                    if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+                        const idx = nr * 8 + nc;
+                        squares[idx].classList.add('highlight');
+                        count++;
+                    }
+                });
+
+                document.getElementById('knight-info').innerHTML =
+                    `Knight at square ${this.knightPos} can move to ${count} squares`;
+            },
+            animate() {
+                this.showMoves();
+                const highlighted = this.board.querySelectorAll('.square.highlight');
+                let i = 0;
+                const interval = setInterval(() => {
+                    if (i >= highlighted.length) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    highlighted[i].style.animation = 'pulse 0.5s';
+                    setTimeout(() => highlighted[i].style.animation = '', 500);
+                    i++;
+                }, 200);
+            },
+            reset() {
+                const squares = this.board.querySelectorAll('.square');
+                squares.forEach(sq => {
+                    sq.classList.remove('highlight', 'attack');
+                    sq.textContent = '';
+                });
+                this.knightPos = -1;
+                document.getElementById('knight-info').textContent = '';
+            }
+        };
+
+        // Special Moves Demo
+        const specialMovesDemo = {
+            board: null,
+            init() {
+                this.board = createBoard('special-board');
+            },
+            showCastling() {
+                this.reset();
+                const squares = this.board.querySelectorAll('.square');
+                squares[60].textContent = '♔';
+                squares[63].textContent = '♖';
+                squares[60].classList.add('highlight');
+                squares[61].classList.add('highlight');
+                squares[62].classList.add('highlight');
+                squares[63].classList.add('highlight');
+                document.getElementById('special-info').innerHTML =
+                    '<strong>Kingside Castling</strong><br>King moves from e1 to g1, Rook from h1 to f1<br>Requirements: No pieces between, no check, neither piece moved';
+            },
+            showEnPassant() {
+                this.reset();
+                const squares = this.board.querySelectorAll('.square');
+                squares[27].textContent = '♟'; // Black pawn d5
+                squares[28].textContent = '♙'; // White pawn e5
+                squares[19].classList.add('highlight'); // d6 target
+                document.getElementById('special-info').innerHTML =
+                    '<strong>En Passant</strong><br>White pawn on e5 can capture black pawn on d5 by moving to d6<br>Only possible immediately after opponent\'s pawn double-push';
+            },
+            showPromotion() {
+                this.reset();
+                const squares = this.board.querySelectorAll('.square');
+                squares[9].textContent = '♙';
+                squares[1].classList.add('highlight');
+                document.getElementById('special-info').innerHTML =
+                    '<strong>Pawn Promotion</strong><br>White pawn on b7 moves to b8 and promotes<br>Can choose Queen, Rook, Bishop, or Knight';
+            },
+            reset() {
+                const squares = this.board.querySelectorAll('.square');
+                squares.forEach(sq => {
+                    sq.classList.remove('highlight', 'attack');
+                    sq.textContent = '';
+                });
+                document.getElementById('special-info').textContent = '';
+            }
+        };
+
+        // Minimax Demo
+        const minimaxDemo = {
+            currentStep: 0,
+            steps: [
+                { level: 0, nodes: 1, desc: 'Root position - our turn (MAX)', score: null },
+                { level: 1, nodes: 3, desc: 'Generate 3 possible moves', score: null },
+                { level: 1, nodes: 3, desc: 'Opponent responds (MIN)', score: null },
+                { level: 2, nodes: 9, desc: 'Evaluate leaf nodes', score: [300, -100, 200, 400, 100, -50, 150, 250, 0] },
+                { level: 1, nodes: 3, desc: 'MIN selects lowest', score: [-100, -50, 0] },
+                { level: 0, nodes: 1, desc: 'MAX selects highest: 0', score: [0] }
+            ],
+            init() {
+                this.reset();
+            },
+            step() {
+                if (this.currentStep >= this.steps.length) {
+                    this.reset();
+                    return;
+                }
+
+                const step = this.steps[this.currentStep];
+                const treeContainer = document.getElementById('minimax-tree');
+                const stepsContainer = document.getElementById('minimax-steps');
+
+                // Add step to stepper
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'step active';
+                stepDiv.innerHTML = `<strong>Step ${this.currentStep + 1}:</strong> ${step.desc}`;
+                stepsContainer.appendChild(stepDiv);
+
+                // Mark previous steps as completed
+                const allSteps = stepsContainer.querySelectorAll('.step');
+                allSteps.forEach((s, i) => {
+                    if (i < this.currentStep) {
+                        s.classList.remove('active');
+                        s.classList.add('completed');
+                    }
+                });
+
+                // Visualize tree
+                this.renderTree(this.currentStep);
+
+                this.currentStep++;
+            },
+            renderTree(stepIdx) {
+                const treeContainer = document.getElementById('minimax-tree');
+                treeContainer.innerHTML = '';
+
+                // Root node
+                const root = document.createElement('div');
+                root.className = 'tree-node';
+                root.textContent = 'Root (MAX)';
+                if (stepIdx >= 5) root.textContent += ': 0';
+                treeContainer.appendChild(root);
+
+                if (stepIdx >= 1) {
+                    const connector = document.createElement('div');
+                    connector.className = 'tree-connector';
+                    treeContainer.appendChild(connector);
+
+                    const level1 = document.createElement('div');
+                    level1.className = 'tree-level';
+                    for (let i = 0; i < 3; i++) {
+                        const node = document.createElement('div');
+                        node.className = 'tree-node';
+                        node.textContent = `Move ${i+1}`;
+                        if (stepIdx >= 4) node.textContent += `: ${this.steps[4].score[i]}`;
+                        level1.appendChild(node);
+                    }
+                    treeContainer.appendChild(level1);
+                }
+
+                if (stepIdx >= 3) {
+                    const connector = document.createElement('div');
+                    connector.className = 'tree-connector';
+                    treeContainer.appendChild(connector);
+
+                    const level2 = document.createElement('div');
+                    level2.className = 'tree-level';
+                    for (let i = 0; i < 9; i++) {
+                        const node = document.createElement('div');
+                        node.className = 'tree-node';
+                        node.textContent = this.steps[3].score[i];
+                        node.style.fontSize = '0.8rem';
+                        level2.appendChild(node);
+                    }
+                    treeContainer.appendChild(level2);
+                }
+            },
+            autoPlay() {
+                const interval = setInterval(() => {
+                    this.step();
+                    if (this.currentStep >= this.steps.length) {
+                        clearInterval(interval);
+                    }
+                }, 1500);
+            },
+            reset() {
+                this.currentStep = 0;
+                document.getElementById('minimax-tree').innerHTML = '';
+                document.getElementById('minimax-steps').innerHTML = '';
+            }
+        };
+
+        // Initialize all demos
+        window.addEventListener('DOMContentLoaded', () => {
+            arrayDemo.init();
+            bitboardDemo.init();
+            knightDemo.init();
+            specialMovesDemo.init();
+            minimaxDemo.init();
+        });
+
+        // Smooth scrolling for nav links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>

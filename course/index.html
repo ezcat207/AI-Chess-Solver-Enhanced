@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How Chess AI Thinks — Inside the Minimax Algorithm</title>
+
+  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    :root {
+      --color-accent:       #2A7B9B;
+      --color-accent-hover: #1F6280;
+      --color-accent-light: #E4F2F7;
+      --color-accent-muted: #5A9DB8;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">How Chess AI Thinks</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <button class="nav-dot" data-target="module-1" data-tooltip="The Chess Computer's Brain" role="tab" aria-label="Module 1: The Chess Computer's Brain"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Meet the Cast" role="tab" aria-label="Module 2: Meet the Cast"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="The Crystal Ball" role="tab" aria-label="Module 3: The Crystal Ball"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="Three Personalities" role="tab" aria-label="Module 4: Three Personalities"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="When Things Break" role="tab" aria-label="Module 5: When Things Break"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- modules/*.html content is assembled here by build.sh -->
+<section class="module" id="module-1" style="background: var(--color-bg);">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">The Chess Computer's Brain</h1>
+      <p class="module-subtitle">What happens in that split second when AI decides where to move?</p>
+    </header>
+
+    <!-- Screen 1: Opening Hook -->
+    <div class="screen animate-in">
+      <p>You're watching two AI agents play chess. Black just moved its queen. White pauses for half a second... then slides its knight to f3. Checkmate.</p>
+
+      <p>What happened in that half-second? Let's rewind and watch the thought process frame by frame.</p>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <div class="callout-content">
+          <span class="callout-title">Why This Matters</span>
+          <p>Understanding how chess AI "thinks" teaches you how to evaluate tradeoffs in any AI system — search depth vs speed, accuracy vs performance, exploration vs exploitation.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 2: The Move Decision Process -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Inside One Move Decision</h2>
+
+      <p>When it's White's turn, the <span class="term" data-definition="Minimax is a decision-making algorithm that assumes both players play perfectly. It explores possible moves by minimizing the maximum possible loss.">Minimax algorithm</span> springs into action. Here's what happens:</p>
+
+      <div class="step-cards stagger-children">
+        <div class="step-card animate-in">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Generate all legal moves</strong>
+            <p>The engine lists every possible move White can make right now — typically 20-40 options.</p>
+          </div>
+        </div>
+        <div class="step-card animate-in">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Sort moves by promise</strong>
+            <p>Captures and checks go first. This isn't random — good <span class="term" data-definition="Move ordering is sorting moves so the best ones are searched first, making Alpha-Beta pruning more effective.">move ordering</span> makes the search dramatically faster.</p>
+          </div>
+        </div>
+        <div class="step-card animate-in">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Look ahead 4 moves deep</strong>
+            <p>For each candidate move, simulate what happens if we play it, Black responds, we counter, Black counters again... that's 4 <span class="term" data-definition="Ply is a single move by one player. A move by White and Black's response is 2 ply. Depth 4 means looking 4 ply (2 full moves) ahead.">ply</span> deep.</p>
+          </div>
+        </div>
+        <div class="step-card animate-in">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Score each future position</strong>
+            <p>At the end of each branch, evaluate who's winning. Material, position, king safety — all factors get weighted and summed.</p>
+          </div>
+        </div>
+        <div class="step-card animate-in">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <strong>Pick the move with the best worst-case</strong>
+            <p>Minimax assumes Black plays perfectly. So we pick the move where even if Black responds optimally, we're still in the best position.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: Code Translation -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What This Looks Like in Code</h2>
+
+      <p>Here's the actual function that makes the decision. Left side: real code from the project. Right side: what it means in plain English.</p>
+
+      <div class="translation-block">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line"><span class="code-keyword">let</span> moves = engine.<span class="code-function">generateLegalMoves</span>();</span>
+<span class="code-line">moves = <span class="code-keyword">this</span>.<span class="code-function">orderMoves</span>(engine, moves);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">let</span> bestMove = moves[<span class="code-number">0</span>], bestScore = -<span class="code-keyword">Infinity</span>;</span>
+<span class="code-line"><span class="code-keyword">for</span> (<span class="code-keyword">const</span> m <span class="code-keyword">of</span> moves) {</span>
+<span class="code-line">  <span class="code-keyword">const</span> u = engine.<span class="code-function">makeMove</span>(m);</span>
+<span class="code-line">  <span class="code-keyword">const</span> s = -<span class="code-keyword">this</span>.<span class="code-function">minimax</span>(engine, depth - <span class="code-number">1</span>, -<span class="code-keyword">Infinity</span>, <span class="code-keyword">Infinity</span>, <span class="code-keyword">false</span>);</span>
+<span class="code-line">  engine.<span class="code-function">unmakeMove</span>(u);</span>
+<span class="code-line">  <span class="code-keyword">if</span> (s > bestScore) { bestScore = s; bestMove = m; }</span>
+<span class="code-line">}</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Get the full list of moves White can legally make right now.</p>
+            <p class="tl">Sort them so promising moves (captures, checks) get searched first.</p>
+            <p class="tl">Start with the first move as our default choice, and give it the worst possible score.</p>
+            <p class="tl">Loop through every candidate move one by one.</p>
+            <p class="tl">Temporarily make the move on the board (we'll undo it in a moment).</p>
+            <p class="tl">Look ahead and ask: if we play this, what's the best Black can respond with? The minus sign flips the perspective.</p>
+            <p class="tl">Undo the move — the board is back to its original state.</p>
+            <p class="tl">If this move scores better than what we've seen so far, remember it as the new best.</p>
+            <p class="tl">After testing all moves, return the one with the highest score.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">🎯</span>
+        <div class="callout-content">
+          <span class="callout-title">The Minus Sign Trick</span>
+          <p>Notice <code>-this.minimax(...)</code>? That's flipping the score because we're switching whose turn it is. What's good for Black is bad for White, so we multiply by -1. This is how Minimax handles turn-taking without writing separate "maximize" and "minimize" functions.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 4: Components Talking (Group Chat) -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Behind the Scenes: Who's Talking to Who?</h2>
+
+      <p>Let's visualize what's happening as messages between three parts of the system: the <strong>UI</strong> (what you see), the <strong>Engine</strong> (game rules), and the <strong>AI</strong> (decision maker).</p>
+
+      <div class="chat-window" id="chat-module1">
+        <div class="chat-messages">
+          <div class="chat-message" data-msg="0" data-sender="ui" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-1)">UI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-1)">UI</span>
+              <p>It's White's turn. AI, what move should we make?</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="1" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>Engine, give me all the legal moves from this position.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="2" data-sender="engine" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-3)">E</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-3)">Engine</span>
+              <p>Here are 34 legal moves: Knight to f3, Pawn to e4, Queen to d5...</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="3" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>Let me try Knight to f3. Engine, temporarily make that move.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="4" data-sender="engine" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-3)">E</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-3)">Engine</span>
+              <p>Done. Knight is now on f3. Black to move.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="5" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>Now simulate Black's best response... (searching 10,847 positions deep)</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="6" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>This move scores +2.4 (good for White). Engine, undo that move.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="7" data-sender="engine" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-3)">E</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-3)">Engine</span>
+              <p>Undone. Board is back to the starting position.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="8" data-sender="ai" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">AI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-2)">AI (White)</span>
+              <p>After testing all 34 moves, Knight to f3 scores highest. UI, play that move.</p>
+            </div>
+          </div>
+          <div class="chat-message" data-msg="9" data-sender="ui" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-1)">UI</div>
+            <div class="chat-bubble">
+              <span class="chat-sender" style="color: var(--color-actor-1)">UI</span>
+              <p>Done! Knight slides to f3. Checkmate! White wins.</p>
+            </div>
+          </div>
+          <div class="chat-typing">
+            <div class="chat-avatar" style="background: var(--color-actor-1)">UI</div>
+            <div class="chat-typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-controls">
+          <button class="btn btn-primary chat-next-btn">Next Message</button>
+          <button class="btn chat-all-btn">Show All</button>
+          <button class="btn chat-reset-btn">Reset</button>
+          <span class="chat-progress"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 5: Quiz -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Check Your Understanding</h2>
+
+      <div class="quiz-container" id="quiz-module1">
+        <div class="quiz-question-block"
+             data-correct="option-b"
+             data-explanation-right="Exactly! The AI tests each move by actually playing it on the board, then undoes it. This is why the Engine needs the makeMove() and unmakeMove() functions — they let the AI explore futures without permanently changing the board."
+             data-explanation-wrong="Think about what happens in the code loop: the AI makes a move, scores it, then undoes it. The board needs to go back to its original state so the next move can be tested fairly.">
+          <h3 class="quiz-question">Why does the AI need to "undo" moves after testing them?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>To save memory</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>So the board returns to its original state for testing the next move</span>
+            </button>
+            <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>To make the game run faster</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-question-block"
+             data-correct="option-c"
+             data-explanation-right="Correct! Minimax explores thousands of positions per move. At depth 4 with 30 moves per position, that's potentially 30^4 = 810,000 positions. The actual number is lower thanks to pruning, but it's still a lot of searching happening in that half-second pause."
+             data-explanation-wrong="The AI isn't picking randomly or just looking at the current board. It's systematically exploring future possibilities by playing out full games in its head. Think about what 'depth 4' means — how many positions does that create?">
+          <h3 class="quiz-question">When White pauses for half a second before moving, what's actually happening?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>The AI is randomly waiting to seem more human</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>The engine is checking if the current position is legal</span>
+            </button>
+            <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>The AI is exploring thousands of possible future positions</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+
+        <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+        <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+<section class="module" id="module-2" style="background: var(--color-bg-warm);">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Cast</h1>
+      <p class="module-subtitle">Three JavaScript files, each with one clear job</p>
+    </header>
+
+    <!-- Screen 1: The Project Structure -->
+    <div class="screen animate-in">
+      <p>This chess AI is built from just three <span class="term" data-definition="JavaScript (JS) is the programming language that runs in web browsers. It makes websites interactive.">JavaScript</span> files. No frameworks, no build tools — just vanilla JS you can open directly in a browser.</p>
+
+      <p>Think of it like a theater production. Three actors, each playing their role, coordinating to make the show happen.</p>
+
+      <div class="file-tree">
+        <div class="ft-file">
+          <span class="ft-name">chess-engine.js</span>
+          <span class="ft-desc">— The rules referee. Knows every chess rule, validates moves, detects checkmate.</span>
+        </div>
+        <div class="ft-file">
+          <span class="ft-name">chess-ai.js</span>
+          <span class="ft-desc">— The strategic thinker. Searches moves, evaluates positions, picks the best option.</span>
+        </div>
+        <div class="ft-file">
+          <span class="ft-name">app.js</span>
+          <span class="ft-desc">— The coordinator. Connects the UI to the engine and AI, manages game flow.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 2: Component Responsibilities -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What Each File Does</h2>
+
+      <div class="pattern-cards stagger-children">
+        <div class="pattern-card animate-in">
+          <div class="pattern-icon" style="background: var(--color-actor-1); color: white;">⚖️</div>
+          <h3 class="pattern-title">chess-engine.js</h3>
+          <p class="pattern-desc">The rule book. It generates all legal moves, checks if a king is in check, handles special moves like <span class="term" data-definition="Castling is a special move in chess where the king and rook move simultaneously. The king moves two squares toward the rook, and the rook jumps over to the other side of the king.">castling</span> and <span class="term" data-definition="En passant is a special pawn capture that can happen when an opponent's pawn moves two squares forward from its starting position, landing beside your pawn. You can capture it as if it had only moved one square.">en passant</span>. It has no opinion on which move is better — that's not its job.</p>
+        </div>
+
+        <div class="pattern-card animate-in">
+          <div class="pattern-icon" style="background: var(--color-actor-2); color: white;">🧠</div>
+          <h3 class="pattern-title">chess-ai.js</h3>
+          <p class="pattern-desc">The strategist. Gets legal moves from the engine, simulates thousands of future positions, scores each one based on material and position, then returns the highest-scoring move. This is where Minimax and Alpha-Beta pruning live.</p>
+        </div>
+
+        <div class="pattern-card animate-in">
+          <div class="pattern-icon" style="background: var(--color-actor-3); color: white;">🎮</div>
+          <h3 class="pattern-title">app.js</h3>
+          <p class="pattern-desc">The stage manager. Updates the visual board when moves happen, handles clicks if a human is playing, tells the AI when it's time to think, displays stats like nodes searched and eval bars. It's the glue between what you see and what's computing underneath.</p>
+        </div>
+      </div>
+
+      <div class="callout callout-accent">
+        <span class="callout-icon">💡</span>
+        <div class="callout-content">
+          <span class="callout-title">Why Separation Matters</span>
+          <p>Each file has one job. This isn't just clean code — it's practical. Want to swap in a different AI algorithm? Just replace chess-ai.js. Want to add a mobile UI? Write a new app.js but keep the engine. <span class="term" data-definition="Separation of concerns means dividing a program into distinct sections, each handling one responsibility. It makes code easier to understand, test, and modify.">Separation of concerns</span> means you can change one piece without breaking the others.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: Code Translation - Initialization -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">How the System Starts Up</h2>
+
+      <p>When you load the page, these three components need to introduce themselves and get ready. Here's what happens in <code>app.js</code>:</p>
+
+      <div class="translation-block">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line"><span class="code-keyword">let</span> game = <span class="code-keyword">new</span> <span class="code-function">ChessEngine</span>();</span>
+<span class="code-line"><span class="code-keyword">let</span> whiteAI = <span class="code-keyword">new</span> <span class="code-function">ChessAI</span>(<span class="code-number">4</span>, <span class="code-string">'aggressive'</span>);</span>
+<span class="code-line"><span class="code-keyword">let</span> blackAI = <span class="code-keyword">new</span> <span class="code-function">ChessAI</span>(<span class="code-number">4</span>, <span class="code-string">'positional'</span>);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-function">renderBoard</span>();</span>
+<span class="code-line"><span class="code-function">updateEval</span>();</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Create a new chess game with the standard starting position.</p>
+            <p class="tl">Create White's AI brain — it'll search 4 moves deep and play aggressively (prioritizing attacks).</p>
+            <p class="tl">Create Black's AI brain — also depth 4, but plays positionally (prioritizing strong piece placement).</p>
+            <p class="tl">Draw the board on screen with all pieces in their starting squares.</p>
+            <p class="tl">Calculate and display the initial evaluation bar (should be 0.0 since it's an equal position).</p>
+          </div>
+        </div>
+      </div>
+
+      <p>That's it. Five lines to boot up a chess computer. The heavy lifting — all the move generation, search trees, and evaluation logic — is hidden inside those <span class="term" data-definition="A class is a blueprint for creating objects. ChessEngine is a class that defines what a chess game can do (generate moves, check legality, etc). Each new ChessEngine() creates a fresh game instance.">class constructors</span>.</p>
+    </div>
+
+    <!-- Screen 4: Communication Flow -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">How They Talk to Each Other</h2>
+
+      <p>The three files don't work in isolation. Here's the typical flow when it's AI's turn to move:</p>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-num">1</div>
+          <p>app.js detects it's AI's turn</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">2</div>
+          <p>Calls AI.findBestMove()</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">3</div>
+          <p>AI asks engine for legal moves</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">4</div>
+          <p>Engine returns move list</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">5</div>
+          <p>AI simulates + scores each move</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">6</div>
+          <p>AI returns best move to app.js</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">7</div>
+          <p>app.js updates the board visually</p>
+        </div>
+      </div>
+
+      <p>Notice how app.js never directly touches game rules, and the AI never directly updates the UI. Each layer respects the boundaries.</p>
+    </div>
+
+    <!-- Screen 5: Why This Architecture -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Why This Setup Works</h2>
+
+      <p>This three-file architecture isn't arbitrary. It follows a pattern you'll see everywhere in software: <strong>Model-View-Controller</strong> (or in modern terms, separation of data, logic, and presentation).</p>
+
+      <div class="icon-rows">
+        <div class="icon-row">
+          <div class="icon-circle" style="background: var(--color-actor-1);">⚖️</div>
+          <div>
+            <strong>chess-engine.js = Model</strong>
+            <p>Holds the game state (where pieces are) and the rules (what moves are legal). Pure logic, no UI concerns.</p>
+          </div>
+        </div>
+        <div class="icon-row">
+          <div class="icon-circle" style="background: var(--color-actor-2);">🧠</div>
+          <div>
+            <strong>chess-ai.js = Controller</strong>
+            <p>Makes decisions based on the model. Takes game state, processes it, returns actions.</p>
+          </div>
+        </div>
+        <div class="icon-row">
+          <div class="icon-circle" style="background: var(--color-actor-3);">🎮</div>
+          <div>
+            <strong>app.js = View</strong>
+            <p>Presents everything to the user. Handles rendering, clicks, animations, stats display.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">🎯</span>
+        <div class="callout-content">
+          <span class="callout-title">When You're Steering AI</span>
+          <p>If you ask an AI assistant to "add a new feature," knowing this structure helps you be specific: "In app.js, add a button that calls engine.generateLegalMoves() and displays them as highlights on the board." That's way clearer than "make it show possible moves" — you've told the AI exactly which file to touch and which function to call.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 6: Quiz -->
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Check Your Understanding</h2>
+
+      <div class="quiz-container" id="quiz-module2">
+        <div class="quiz-question-block"
+             data-correct="option-c"
+             data-explanation-right="Exactly! The engine is the rules referee — it knows what's legal but has no opinion on what's smart. The AI uses those legal moves to decide what to play, and app.js displays the result. Each file has one job."
+             data-explanation-wrong="Think about what 'engine' means in this context. It's not making strategic decisions — that's the AI's job. The engine just knows the rules of chess inside and out.">
+          <h3 class="quiz-question">A user reports: 'The AI is making illegal moves.' Which file would you check first?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>chess-ai.js — the AI must be broken</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>app.js — the UI is probably rendering wrong</span>
+            </button>
+            <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>chess-engine.js — move generation might have a bug</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-question-block"
+             data-correct="option-b"
+             data-explanation-right="Correct! app.js handles everything UI-related. The board animation, the move history, the evaluation bar — all app.js. The engine and AI just care about logic and numbers."
+             data-explanation-wrong="Remember the separation: engine = rules, AI = strategy, app = presentation. Which one is responsible for what the user sees?">
+          <h3 class="quiz-question">You want the board to animate pieces sliding smoothly instead of teleporting. Where do you add that code?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>chess-engine.js</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>app.js</span>
+            </button>
+            <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>chess-ai.js</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+
+        <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+        <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+  </main>
+
+</body>
+</html>
