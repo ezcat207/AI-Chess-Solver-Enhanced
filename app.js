@@ -27,6 +27,9 @@
     let timeoutId = null;
     let selectedSquare = null;
     let legalMovesFromSelected = [];
+    let showHints = false;
+    let hintMoves = [];
+    let moveScores = []; // Store evaluation scores for each move
 
     const SPEED_MAP = [1500, 800, 500, 200, 50];
     const SPEED_LABELS = ['1.5s', '800ms', '500ms', '200ms', '50ms'];
@@ -88,6 +91,11 @@
             resume: "Resume",
             reset: "Reset",
             speed: "Speed",
+            getHint: "💡 AI Hint",
+            hintAnalyzing: "Analyzing...",
+            hintTop2: "Top 2 moves:",
+            showScores: "Show Scores",
+            hideScores: "Hide Scores",
             thinking: "thinking...",
             yourTurn: "- Your turn",
             waiting: "Waiting...",
@@ -158,6 +166,11 @@
             resume: "继续",
             reset: "重置",
             speed: "速度",
+            getHint: "💡 AI提示",
+            hintAnalyzing: "分析中...",
+            hintTop2: "最佳2步:",
+            showScores: "显示分数",
+            hideScores: "隐藏分数",
             thinking: "思考中...",
             yourTurn: "- 您的回合",
             waiting: "等待中...",
@@ -205,7 +218,15 @@
         // Buttons
         document.getElementById('btn-start').innerHTML = '<span class="ctrl-icon">▶</span> ' + t('startMatch');
         document.getElementById('btn-reset').innerHTML = '<span class="ctrl-icon">↺</span> ' + t('reset');
+        document.getElementById('btn-hint').innerHTML = '<span class="ctrl-icon">💡</span> ' + t('getHint');
         document.querySelector('.speed-label').textContent = t('speed');
+
+        const scoresBtn = document.getElementById('toggle-scores');
+        if (scoresBtn.classList.contains('active')) {
+            scoresBtn.innerHTML = `<span class="ctrl-icon">📊</span> ${t('hideScores')}`;
+        } else {
+            scoresBtn.innerHTML = `<span class="ctrl-icon">📊</span> ${t('showScores')}`;
+        }
 
         // Settings labels
         document.querySelectorAll('.setting-label')[0].textContent = t('gameMode');
@@ -213,6 +234,61 @@
         document.querySelectorAll('.setting-label')[2].textContent = t('blackPlayer');
         document.querySelectorAll('.setting-label')[3].textContent = t('autoRematch');
         document.querySelectorAll('.setting-label')[4].textContent = t('loadPosition');
+
+        // Game mode buttons
+        document.querySelectorAll('.mode-btn')[0].textContent = t('aiVsAi');
+        document.querySelectorAll('.mode-btn')[1].textContent = t('humanVsAi');
+        document.querySelectorAll('.mode-btn')[2].textContent = t('aiVsHuman');
+        document.querySelectorAll('.mode-btn')[3].textContent = t('humanVsHuman');
+
+        // Player type selects
+        const whiteTypeOpts = document.querySelectorAll('#white-type option');
+        whiteTypeOpts[0].textContent = t('humanPlayer');
+        whiteTypeOpts[1].textContent = 'AI';
+
+        const blackTypeOpts = document.querySelectorAll('#black-type option');
+        blackTypeOpts[0].textContent = t('humanPlayer');
+        blackTypeOpts[1].textContent = 'AI';
+
+        // Strategy selects
+        updateStrategyOptions('white-strategy');
+        updateStrategyOptions('black-strategy');
+
+        // Depth selects
+        updateDepthOptions('white-depth');
+        updateDepthOptions('black-depth');
+
+        // Endgame category
+        const catSelect = document.getElementById('endgame-category');
+        catSelect.options[0].textContent = t('selectEndgame');
+        catSelect.options[1].textContent = currentLang === 'zh' ? '基础残局 (8)' : 'Basic Endgames (8)';
+        catSelect.options[2].textContent = currentLang === 'zh' ? '战术残局 (10)' : 'Tactical Endgames (10)';
+        catSelect.options[3].textContent = currentLang === 'zh' ? '兵残局 (8)' : 'Pawn Endgames (8)';
+        catSelect.options[4].textContent = currentLang === 'zh' ? '车残局 (8)' : 'Rook Endgames (8)';
+        catSelect.options[5].textContent = currentLang === 'zh' ? '后残局 (6)' : 'Queen Endgames (6)';
+        catSelect.options[6].textContent = currentLang === 'zh' ? '著名棋局 (6)' : 'Famous Games (6)';
+        catSelect.options[7].textContent = currentLang === 'zh' ? '复杂中局 (7)' : 'Complex Middlegames (7)';
+        catSelect.options[8].textContent = currentLang === 'zh' ? '战术谜题 (6)' : 'Tactical Puzzles (6)';
+
+        // Endgame position
+        const posSelect = document.getElementById('endgame-position');
+        if (posSelect.options.length > 0) {
+            posSelect.options[0].textContent = t('selectPosition');
+        }
+
+        // Preset buttons
+        document.getElementById('btn-random-endgame').innerHTML = t('randomEndgame');
+        const presetBtns = document.querySelectorAll('.puzzle-chip[data-fen]');
+        if (presetBtns.length > 0) {
+            presetBtns[0].textContent = t('startingPos');
+        }
+
+        // FEN input
+        document.getElementById('fen-input').placeholder = t('pasteFen');
+        document.getElementById('btn-load-fen').textContent = t('load');
+
+        // Auto rematch label
+        document.querySelector('.toggle-label').textContent = t('playContMatch');
 
         // Evaluation labels
         document.querySelector('.eval-label-left').textContent = t('white');
@@ -227,6 +303,26 @@
 
         updateAgentLabels();
         updateTurnIndicator();
+        renderMoveList();
+    }
+
+    function updateStrategyOptions(selectId) {
+        const select = document.getElementById(selectId);
+        const opts = select.options;
+        opts[0].textContent = t('aggressive');
+        opts[1].textContent = t('positional');
+        opts[2].textContent = t('defensive');
+        opts[3].textContent = t('random');
+    }
+
+    function updateDepthOptions(selectId) {
+        const select = document.getElementById(selectId);
+        const opts = select.options;
+        opts[0].textContent = `${t('depth')} 2 (${t('fast')})`;
+        opts[1].textContent = `${t('depth')} 3`;
+        opts[2].textContent = `${t('depth')} 4 (${t('standard')})`;
+        opts[3].textContent = `${t('depth')} 5 (${t('strong')})`;
+        opts[4].textContent = `${t('depth')} 6 (${t('expert')})`;
     }
 
     // ===== ENDGAME DATABASE =====
@@ -436,6 +532,18 @@
                 // Highlight legal moves
                 if (legalMovesFromSelected.some(m => m.to === idx)) sq.classList.add('legal-move');
 
+                // Highlight hint moves
+                if (showHints && hintMoves.some(h => h.move.to === idx)) {
+                    sq.classList.add('hint-move');
+                    const hintIdx = hintMoves.findIndex(h => h.move.to === idx);
+                    if (hintIdx !== -1) {
+                        const hintLabel = document.createElement('div');
+                        hintLabel.className = 'hint-label';
+                        hintLabel.textContent = hintIdx + 1;
+                        sq.appendChild(hintLabel);
+                    }
+                }
+
                 const p = game.board[idx];
                 if (p) {
                     const span = document.createElement('span');
@@ -563,13 +671,36 @@
     // ===== MOVE LIST =====
     function renderMoveList() {
         const el = document.getElementById('move-list');
-        if (moveList.length === 0) { el.innerHTML = '<div class="move-list-empty">Waiting for match to start...</div>'; return; }
+        if (moveList.length === 0) {
+            el.innerHTML = `<div class="move-list-empty">${t('waitingMatch')}</div>`;
+            return;
+        }
+
+        const showScoresBtn = document.getElementById('toggle-scores');
+        const scoresVisible = showScoresBtn && showScoresBtn.classList.contains('active');
+
         let html = '';
         for (let i = 0; i < moveList.length; i += 2) {
             const n = Math.floor(i / 2) + 1;
             const wCls = i === moveList.length - 1 ? ' move-latest' : '';
             const bCls = i + 1 === moveList.length - 1 ? ' move-latest' : '';
-            html += `<div class="move-row"><span class="move-num">${n}.</span><span class="move-w${wCls}">${moveList[i]}</span><span class="move-b${bCls}">${moveList[i + 1] || ''}</span></div>`;
+
+            const wScore = moveScores[i] !== undefined ? moveScores[i] : null;
+            const bScore = moveScores[i + 1] !== undefined ? moveScores[i + 1] : null;
+
+            let wMove = moveList[i];
+            let bMove = moveList[i + 1] || '';
+
+            if (scoresVisible) {
+                if (wScore !== null) wMove += ` <span class="move-score">${(wScore / 100).toFixed(1)}</span>`;
+                if (bMove && bScore !== null) bMove += ` <span class="move-score">${(bScore / 100).toFixed(1)}</span>`;
+            }
+
+            html += `<div class="move-row">
+                <span class="move-num">${n}.</span>
+                <span class="move-w${wCls}">${wMove}</span>
+                <span class="move-b${bCls}">${bMove}</span>
+            </div>`;
         }
         el.innerHTML = html;
         el.scrollTop = el.scrollHeight;
@@ -672,9 +803,17 @@
         game.makeMove(move);
         lastMove = move;
         moveList.push(san);
+
+        // Evaluate and store score after move
+        const evalAI = new ChessAI(1, 'positional');
+        const evalScore = evalAI.evaluate(game);
+        moveScores.push(evalScore);
+
         totalMovesPlayed++;
         selectedSquare = null;
         legalMovesFromSelected = [];
+        showHints = false;
+        hintMoves = [];
 
         renderBoard(true);
         renderMoveList();
@@ -699,6 +838,14 @@
 
         updateTurnIndicator();
 
+        // Enable/disable hint button based on player type
+        const hintBtn = document.getElementById('btn-hint');
+        if (isCurrentPlayerHuman()) {
+            hintBtn.disabled = false;
+        } else {
+            hintBtn.disabled = true;
+        }
+
         // If current player is human, wait for click
         if (isCurrentPlayerHuman()) {
             renderBoard(false);
@@ -719,6 +866,7 @@
             game.makeMove(result.move);
             lastMove = result.move;
             moveList.push(san);
+            moveScores.push(result.score); // Store AI move score
             totalMovesPlayed++;
             totalNodesSearched += result.nodes;
 
@@ -779,8 +927,11 @@
         game = fen ? new ChessEngine(fen) : new ChessEngine();
         lastMove = null;
         moveList = [];
+        moveScores = [];
         selectedSquare = null;
         legalMovesFromSelected = [];
+        showHints = false;
+        hintMoves = [];
 
         renderBoard();
         renderMoveList();
@@ -790,7 +941,56 @@
 
         document.getElementById('btn-start').disabled = false;
         document.getElementById('btn-pause').disabled = true;
-        document.getElementById('btn-pause').innerHTML = '<span class="ctrl-icon">⏸</span> Pause';
+        document.getElementById('btn-pause').innerHTML = `<span class="ctrl-icon">⏸</span> ${t('pause')}`;
+    }
+
+    // ===== AI HINT SYSTEM =====
+    function getAIHint() {
+        if (!running || !isCurrentPlayerHuman()) return;
+
+        const btn = document.getElementById('btn-hint');
+        btn.disabled = true;
+        btn.innerHTML = `<span class="ctrl-icon">⏳</span> ${t('hintAnalyzing')}`;
+
+        // Use a slightly deeper search for hints
+        const hintAI = new ChessAI(game.turn === COLOR.WHITE ? whiteAI.maxDepth : blackAI.maxDepth,
+                                   game.turn === COLOR.WHITE ? whiteAI.strategy : blackAI.strategy);
+
+        setTimeout(() => {
+            const allMoves = game.generateLegalMoves();
+            const scoredMoves = [];
+
+            // Evaluate all moves
+            for (const move of allMoves) {
+                game.makeMove(move);
+                const score = -hintAI.evaluate(game); // Negate because we evaluate from opponent's view
+                game.unmakeMove();
+                scoredMoves.push({ move, score, san: game.moveToSAN(move) });
+            }
+
+            // Sort and get top 2
+            scoredMoves.sort((a, b) => b.score - a.score);
+            hintMoves = scoredMoves.slice(0, 2);
+            showHints = true;
+
+            renderBoard(false);
+
+            btn.disabled = false;
+            btn.innerHTML = `<span class="ctrl-icon">💡</span> ${t('getHint')}`;
+
+            // Show hint tooltip
+            const hintText = `${t('hintTop2')}\n1. ${hintMoves[0].san} (${(hintMoves[0].score / 100).toFixed(1)})\n2. ${hintMoves[1].san} (${(hintMoves[1].score / 100).toFixed(1)})`;
+
+            // Create tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'hint-tooltip';
+            tooltip.innerHTML = `<div class="hint-title">${t('hintTop2')}</div>` +
+                `<div class="hint-move">1️⃣ ${hintMoves[0].san} <span class="hint-score">${(hintMoves[0].score / 100).toFixed(1)}</span></div>` +
+                `<div class="hint-move">2️⃣ ${hintMoves[1].san} <span class="hint-score">${(hintMoves[1].score / 100).toFixed(1)}</span></div>`;
+
+            document.body.appendChild(tooltip);
+            setTimeout(() => tooltip.remove(), 5000);
+        }, 100);
     }
 
     // ===== GAME MODE SWITCHER =====
@@ -855,6 +1055,19 @@
         document.getElementById('btn-start').addEventListener('click', startMatch);
         document.getElementById('btn-pause').addEventListener('click', pauseMatch);
         document.getElementById('btn-reset').addEventListener('click', resetGame);
+        document.getElementById('btn-hint').addEventListener('click', getAIHint);
+
+        // Toggle scores button
+        document.getElementById('toggle-scores').addEventListener('click', (e) => {
+            const btn = e.target.closest('.toggle-scores-btn');
+            btn.classList.toggle('active');
+            if (btn.classList.contains('active')) {
+                btn.innerHTML = `<span class="ctrl-icon">📊</span> ${t('hideScores')}`;
+            } else {
+                btn.innerHTML = `<span class="ctrl-icon">📊</span> ${t('showScores')}`;
+            }
+            renderMoveList();
+        });
 
         // Speed
         document.getElementById('speed-slider').addEventListener('input', (e) => {
