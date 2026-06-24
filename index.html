@@ -36,6 +36,10 @@
                     <span class="stat-label">Nodes</span>
                     <span class="stat-value" id="total-nodes-stat">0</span>
                 </div>
+                <div class="lang-switcher">
+                    <button class="lang-btn" data-lang="en">EN</button>
+                    <button class="lang-btn active" data-lang="zh">中</button>
+                </div>
             </div>
         </div>
     </header>
@@ -105,6 +109,15 @@
                 <!-- Agent Settings -->
                 <div class="panel-card" id="settings-card">
                     <h2 class="panel-title">Agent Configuration</h2>
+                    <div class="control-group">
+                        <label class="setting-label">Game Mode</label>
+                        <div class="game-mode-switcher">
+                            <button class="mode-btn" data-mode="ai-vs-ai">AI vs AI</button>
+                            <button class="mode-btn active" data-mode="human-vs-ai">Human vs AI</button>
+                            <button class="mode-btn" data-mode="ai-vs-human">AI vs Human</button>
+                            <button class="mode-btn" data-mode="human-vs-human">Human vs Human</button>
+                        </div>
+                    </div>
                     <div class="agent-settings-row">
                         <div class="agent-setting">
                             <label class="setting-label">♔ White Player</label>

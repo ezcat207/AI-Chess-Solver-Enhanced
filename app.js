@@ -31,6 +31,204 @@
     const SPEED_MAP = [1500, 800, 500, 200, 50];
     const SPEED_LABELS = ['1.5s', '800ms', '500ms', '200ms', '50ms'];
 
+    // ===== I18N =====
+    let currentLang = localStorage.getItem('chess-lang') || 'en';
+
+    const i18n = {
+        en: {
+            title: "AI Chess Solver",
+            subtitle: "Minimax · Alpha-Beta · Autonomous Agents",
+            matches: "Matches",
+            moves: "Moves",
+            nodes: "Nodes",
+            agentWhite: "Agent White",
+            agentBlack: "Agent Black",
+            vs: "VS",
+            wins: "wins",
+            gameMode: "Game Mode",
+            aiVsAi: "AI vs AI",
+            humanVsAi: "Human vs AI",
+            aiVsHuman: "AI vs Human",
+            humanVsHuman: "Human vs Human",
+            whitePlayer: "♔ White Player",
+            blackPlayer: "♚ Black Player",
+            humanPlayer: "Human Player",
+            aggressive: "Aggressive",
+            positional: "Positional",
+            defensive: "Defensive",
+            random: "Random (Baseline)",
+            depth: "Depth",
+            fast: "Fast",
+            standard: "Standard",
+            strong: "Strong",
+            expert: "Expert",
+            autoRematch: "Auto-Rematch",
+            playContMatch: "Play continuous matches",
+            loadPosition: "Load Position (FEN)",
+            pasteFen: "Paste FEN...",
+            load: "Load",
+            selectEndgame: "Select Endgame Type...",
+            selectPosition: "Select Position...",
+            randomEndgame: "🎲 Random",
+            startingPos: "Starting",
+            liveEval: "Live Evaluation",
+            white: "White",
+            black: "Black",
+            currentTurn: "Current turn",
+            moveNum: "Move #",
+            nodesLast: "Nodes (last)",
+            timeLast: "Time (last)",
+            bestScore: "Best score",
+            moveHistory: "Move History",
+            matchLog: "Match Log",
+            waitingMatch: "Waiting for match to start...",
+            noMatches: "No matches played yet.",
+            startMatch: "Start Match",
+            pause: "Pause",
+            resume: "Resume",
+            reset: "Reset",
+            speed: "Speed",
+            thinking: "thinking...",
+            yourTurn: "- Your turn",
+            waiting: "Waiting...",
+            paused: "Paused",
+            whiteWins: "White wins by",
+            blackWins: "Black wins by",
+            draw: "Draw",
+            checkmate: "checkmate",
+            stalemate: "stalemate",
+            insuffMat: "insufficient material",
+            threefold: "threefold repetition",
+            fiftyMove: "50-move rule",
+            nextMatch: "Starting next match in 2s...",
+            matchEnded: "Match ended.",
+            agentConfig: "Agent Configuration",
+            language: "Language"
+        },
+        zh: {
+            title: "AI 国际象棋求解器",
+            subtitle: "极小极大 · α-β剪枝 · 自主智能体",
+            matches: "对局",
+            moves: "走法",
+            nodes: "节点",
+            agentWhite: "白方智能体",
+            agentBlack: "黑方智能体",
+            vs: "对战",
+            wins: "胜",
+            gameMode: "游戏模式",
+            aiVsAi: "AI 对战",
+            humanVsAi: "人机对战",
+            aiVsHuman: "机人对战",
+            humanVsHuman: "双人对战",
+            whitePlayer: "♔ 白方玩家",
+            blackPlayer: "♚ 黑方玩家",
+            humanPlayer: "人类玩家",
+            aggressive: "进攻型",
+            positional: "位置型",
+            defensive: "防守型",
+            random: "随机（基准）",
+            depth: "深度",
+            fast: "快速",
+            standard: "标准",
+            strong: "强力",
+            expert: "专家",
+            autoRematch: "自动重赛",
+            playContMatch: "连续对局",
+            loadPosition: "加载局面 (FEN)",
+            pasteFen: "粘贴 FEN...",
+            load: "加载",
+            selectEndgame: "选择残局类型...",
+            selectPosition: "选择具体局面...",
+            randomEndgame: "🎲 随机",
+            startingPos: "标准开局",
+            liveEval: "实时评估",
+            white: "白方",
+            black: "黑方",
+            currentTurn: "当前回合",
+            moveNum: "第几步",
+            nodesLast: "节点数（最近）",
+            timeLast: "耗时（最近）",
+            bestScore: "最佳评分",
+            moveHistory: "走法历史",
+            matchLog: "对局日志",
+            waitingMatch: "等待对局开始...",
+            noMatches: "尚未进行对局。",
+            startMatch: "开始对局",
+            pause: "暂停",
+            resume: "继续",
+            reset: "重置",
+            speed: "速度",
+            thinking: "思考中...",
+            yourTurn: "- 您的回合",
+            waiting: "等待中...",
+            paused: "已暂停",
+            whiteWins: "白方获胜",
+            blackWins: "黑方获胜",
+            draw: "和棋",
+            checkmate: "将死",
+            stalemate: "逼和",
+            insuffMat: "子力不足",
+            threefold: "三次重复",
+            fiftyMove: "50步规则",
+            nextMatch: "2秒后开始下一局...",
+            matchEnded: "对局结束。",
+            agentConfig: "智能体配置",
+            language: "语言"
+        }
+    };
+
+    function t(key) {
+        return i18n[currentLang][key] || key;
+    }
+
+    function updateLanguage() {
+        // Update all text elements
+        document.querySelector('.logo-text h1').textContent = t('title');
+        document.querySelector('.logo-subtitle').textContent = t('subtitle');
+        document.querySelectorAll('.stat-label')[0].textContent = t('matches');
+        document.querySelectorAll('.stat-label')[1].textContent = t('moves');
+        document.querySelectorAll('.stat-label')[2].textContent = t('nodes');
+
+        // Agent cards
+        document.querySelector('.white-agent-card .agent-title').textContent = t('agentWhite');
+        document.querySelector('.black-agent-card .agent-title').textContent = t('agentBlack');
+        document.querySelector('.vs-badge').textContent = t('vs');
+        document.querySelectorAll('.agent-wins-label')[0].textContent = t('wins');
+        document.querySelectorAll('.agent-wins-label')[1].textContent = t('wins');
+
+        // Panel titles
+        document.querySelectorAll('.panel-title')[0].textContent = t('agentConfig');
+        document.querySelectorAll('.panel-title')[1].textContent = t('liveEval');
+        document.querySelectorAll('.panel-title')[2].textContent = t('moveHistory');
+        document.querySelectorAll('.panel-title')[3].textContent = t('matchLog');
+
+        // Buttons
+        document.getElementById('btn-start').innerHTML = '<span class="ctrl-icon">▶</span> ' + t('startMatch');
+        document.getElementById('btn-reset').innerHTML = '<span class="ctrl-icon">↺</span> ' + t('reset');
+        document.querySelector('.speed-label').textContent = t('speed');
+
+        // Settings labels
+        document.querySelectorAll('.setting-label')[0].textContent = t('gameMode');
+        document.querySelectorAll('.setting-label')[1].textContent = t('whitePlayer');
+        document.querySelectorAll('.setting-label')[2].textContent = t('blackPlayer');
+        document.querySelectorAll('.setting-label')[3].textContent = t('autoRematch');
+        document.querySelectorAll('.setting-label')[4].textContent = t('loadPosition');
+
+        // Evaluation labels
+        document.querySelector('.eval-label-left').textContent = t('white');
+        document.querySelector('.eval-label-right').textContent = t('black');
+
+        // Stats
+        document.querySelectorAll('.stat-row span')[0].textContent = t('currentTurn');
+        document.querySelectorAll('.stat-row span')[2].textContent = t('moveNum');
+        document.querySelectorAll('.stat-row span')[4].textContent = t('nodesLast');
+        document.querySelectorAll('.stat-row span')[6].textContent = t('timeLast');
+        document.querySelectorAll('.stat-row span')[8].textContent = t('bestScore');
+
+        updateAgentLabels();
+        updateTurnIndicator();
+    }
+
     // ===== ENDGAME DATABASE =====
     const ENDGAME_LIBRARY = {
         basic: {
@@ -306,16 +504,17 @@
         const text = document.getElementById('turn-text');
         if (!running || paused) {
             dot.className = 'turn-dot ' + (paused ? 'paused' : 'ended');
-            text.textContent = paused ? 'Paused' : 'Waiting...';
+            text.textContent = paused ? t('paused') : t('waiting');
         } else {
             dot.className = 'turn-dot';
-            const side = game.turn === COLOR.WHITE ? 'White' : 'Black';
+            const side = game.turn === COLOR.WHITE ? t('white') : t('black');
             const isHuman = isCurrentPlayerHuman();
             if (isHuman) {
-                text.textContent = `${side} (Human) - Your turn`;
+                text.textContent = `${side} (${t('humanPlayer')}) ${t('yourTurn')}`;
             } else {
                 const strat = game.turn === COLOR.WHITE ? whiteAI.strategy : blackAI.strategy;
-                text.textContent = `${side} (${strat}) thinking...`;
+                const stratName = t(strat);
+                text.textContent = `${side} (${stratName}) ${t('thinking')}`;
             }
         }
     }
@@ -347,15 +546,17 @@
         const bd = document.getElementById('black-depth').value;
 
         if (wt === 'human') {
-            document.getElementById('white-agent-type').textContent = 'Human Player';
+            document.getElementById('white-agent-type').textContent = t('humanPlayer');
         } else {
-            document.getElementById('white-agent-type').textContent = `${ws.charAt(0).toUpperCase() + ws.slice(1)} · Depth ${wd}`;
+            const stratName = t(ws);
+            document.getElementById('white-agent-type').textContent = `${stratName} · ${t('depth')} ${wd}`;
         }
 
         if (bt === 'human') {
-            document.getElementById('black-agent-type').textContent = 'Human Player';
+            document.getElementById('black-agent-type').textContent = t('humanPlayer');
         } else {
-            document.getElementById('black-agent-type').textContent = `${bs.charAt(0).toUpperCase() + bs.slice(1)} · Depth ${bd}`;
+            const stratName = t(bs);
+            document.getElementById('black-agent-type').textContent = `${stratName} · ${t('depth')} ${bd}`;
         }
     }
 
@@ -592,6 +793,27 @@
         document.getElementById('btn-pause').innerHTML = '<span class="ctrl-icon">⏸</span> Pause';
     }
 
+    // ===== GAME MODE SWITCHER =====
+    function setGameMode(mode) {
+        const modes = {
+            'ai-vs-ai': { white: 'ai', black: 'ai' },
+            'human-vs-ai': { white: 'human', black: 'ai' },
+            'ai-vs-human': { white: 'ai', black: 'human' },
+            'human-vs-human': { white: 'human', black: 'human' }
+        };
+
+        const config = modes[mode];
+        document.getElementById('white-type').value = config.white;
+        document.getElementById('black-type').value = config.black;
+
+        // Update active button
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === mode);
+        });
+
+        updateAgentLabels();
+    }
+
     // ===== INIT =====
     function init() {
         initParticles();
@@ -599,6 +821,35 @@
         updateEval();
         updateTurnIndicator();
         updateAgentLabels();
+
+        // Set initial language
+        const savedLang = localStorage.getItem('chess-lang') || 'zh';
+        currentLang = savedLang;
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === savedLang);
+        });
+        updateLanguage();
+
+        // Language switcher
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentLang = btn.dataset.lang;
+                localStorage.setItem('chess-lang', currentLang);
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                updateLanguage();
+            });
+        });
+
+        // Game mode switcher
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setGameMode(btn.dataset.mode);
+            });
+        });
+
+        // Set initial mode
+        setGameMode('human-vs-ai');
 
         // Controls
         document.getElementById('btn-start').addEventListener('click', startMatch);
@@ -629,12 +880,12 @@
 
             if (!category) {
                 posSelect.disabled = true;
-                posSelect.innerHTML = '<option value="">先选择类型...</option>';
+                posSelect.innerHTML = `<option value="">${t('selectPosition')}</option>`;
                 return;
             }
 
             posSelect.disabled = false;
-            posSelect.innerHTML = '<option value="">选择具体局面...</option>';
+            posSelect.innerHTML = `<option value="">${t('selectPosition')}</option>`;
 
             const positions = ENDGAME_LIBRARY[category].positions;
             positions.forEach((pos, idx) => {
