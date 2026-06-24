@@ -2,6 +2,9 @@
 
 Play chess against AI or watch autonomous AI agents compete, with 59 classic endgame positions and human vs AI gameplay. Built from scratch with Minimax and Alpha-Beta Pruning in vanilla JavaScript.
 
+> **Based on:** [AI-Chess-Solver](https://github.com/Vedag812/AI-Chess-Solver) by Vedag812
+> **Enhancements:** Human vs AI gameplay, bilingual UI (EN/中), AI hint system, interactive learning materials
+
 ## The big picture
 
 The core idea is the same one behind Monte Carlo Tree Search agents in games like Uno: rather than hardcoding chess strategy, the agents figure out what works by searching through thousands of possible future positions and measuring which moves lead to better outcomes. There are no rules like "always control the center" or "trade when you're up material." Strategy emerges entirely from the evaluation function and the depth of the search.
@@ -52,6 +55,8 @@ Good move ordering means the alpha-beta cutoffs happen early, which lets the eng
 ## What you can do with it
 
 - **Human vs AI gameplay** — play against the AI with click-to-move interface and highlighted legal moves
+- **AI hint system** — get top 2 move recommendations with evaluation scores during gameplay (optimized two-phase search: 85%+ node reduction)
+- **Bilingual interface** — toggle between English and Chinese with one click
 - **Watch AI vs AI matches** — press Start and two agents play automatically at adjustable speed (50ms to 1.5s per move)
 - **59 classic endgame positions** — organized in 8 categories (basic, tactics, pawn, rook, queen, famous, complex, puzzles)
 - **Random endgame generator** — practice with procedurally generated positions
@@ -70,8 +75,88 @@ AI-Chess-Solver/
 ├── style.css           # Dark-mode design system, piece styling, animations
 ├── chess-engine.js     # Full chess rules engine (move gen, validation, FEN, SAN)
 ├── chess-ai.js         # Minimax + Alpha-Beta AI with strategy weight profiles
-└── app.js              # Auto-play controller, match tracking, board rendering
+├── app.js              # Auto-play controller, match tracking, board rendering
+├── course/             # Interactive course (40% complete)
+│   ├── index.html      # Main course page
+│   ├── styles.css      # Course design system
+│   ├── main.js         # Interactive engine
+│   └── modules/        # Course modules
+│       ├── 01-brain.html     # ✅ The Chess Computer's Brain
+│       └── 02-cast.html      # ✅ Meet the Cast
+└── tutorials/          # Standalone learning resources
+    ├── chess-tutorial.html      # How to play chess (beginner to advanced)
+    └── chess-modeling.html      # Data structures & algorithms deep-dive
 ```
+
+## Educational Materials
+
+This project includes three comprehensive learning resources designed to help you understand both chess and the AI implementation:
+
+### 🎓 Interactive Course (40% Complete)
+**Path:** `course/index.html`
+
+A single-page interactive course teaching how the AI Chess Solver works, designed for "vibe coders" who build with AI but want to understand what's happening under the hood.
+
+**✅ Completed Modules:**
+- **Module 1: The Chess Computer's Brain** — How AI makes move decisions
+- **Module 2: Meet the Cast** — The three JavaScript files and their jobs
+
+**⏳ Coming Soon:**
+- Module 3: The Crystal Ball (Minimax algorithm deep dive)
+- Module 4: Three Personalities (Strategy weights explained)
+- Module 5: When Things Break (Debugging chess AI)
+
+**Features:**
+- Scroll-based navigation with animated progress bar
+- Group chat animations showing component communication
+- Code ↔ English translation blocks
+- Interactive quizzes with instant feedback
+- Glossary tooltips on technical terms
+- Responsive design for mobile
+
+### ♟️ Chess Tutorial
+**Path:** `tutorials/chess-tutorial.html`
+
+Learn how to play chess from scratch! A self-contained HTML resource (79KB, 1,919 lines) covering:
+
+- **Beginner Level:** Piece movements, board setup, special moves (castling, en passant, promotion)
+- **Intermediate Level:** Tactical patterns (forks, pins, skewers, discovered attacks)
+- **Advanced Level:** Strategic concepts, famous openings, endgame principles
+
+**Interactive Elements:**
+- Animated chess boards demonstrating piece movements
+- Tactical visualizations
+- Knowledge check quizzes
+- Real chess position examples
+
+### 🔬 Chess Modeling Guide
+**Path:** `tutorials/chess-modeling.html`
+
+Technical deep-dive into the data structures and algorithms used in this chess solver (103KB, 2,181 lines).
+
+**Eight Core Topics:**
+1. Board representation (flat array, coordinate systems)
+2. Piece representation and encoding
+3. Move generation algorithms
+4. Move validation and legal move filtering
+5. State management (makeMove/unmakeMove)
+6. Search algorithms (Minimax, Alpha-Beta pruning)
+7. Evaluation functions and piece-square tables
+8. Performance optimizations (move ordering, transposition tables)
+
+**Interactive Elements:**
+- Array indexing demo
+- Bitboard visualizer
+- Knight move generator
+- Minimax tree visualizer
+- Real code examples from this project
+
+**Why These Materials?**
+These resources were created to support learners like Luna who want to:
+- Understand graph theory and search algorithms through a concrete application
+- See how classical AI techniques work in practice
+- Build intuition for game tree search and evaluation
+- Learn by modifying real, working code
 
 ## How to run
 
