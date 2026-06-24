@@ -107,7 +107,11 @@
                     <h2 class="panel-title">Agent Configuration</h2>
                     <div class="agent-settings-row">
                         <div class="agent-setting">
-                            <label class="setting-label">♔ White Agent</label>
+                            <label class="setting-label">♔ White Player</label>
+                            <select class="setting-select" id="white-type">
+                                <option value="human">Human</option>
+                                <option value="ai">AI</option>
+                            </select>
                             <select class="setting-select" id="white-strategy">
                                 <option value="aggressive">Aggressive</option>
                                 <option value="positional">Positional</option>
@@ -123,7 +127,11 @@
                             </select>
                         </div>
                         <div class="agent-setting">
-                            <label class="setting-label">♚ Black Agent</label>
+                            <label class="setting-label">♚ Black Player</label>
+                            <select class="setting-select" id="black-type">
+                                <option value="human">Human</option>
+                                <option value="ai" selected>AI</option>
+                            </select>
                             <select class="setting-select" id="black-strategy">
                                 <option value="aggressive">Aggressive</option>
                                 <option value="positional" selected>Positional</option>
@@ -155,11 +163,25 @@
                             <input type="text" class="fen-input" id="fen-input" placeholder="Paste FEN..." value="">
                             <button class="btn-sm" id="btn-load-fen">Load</button>
                         </div>
+                        <div class="endgame-selector">
+                            <select class="setting-select" id="endgame-category">
+                                <option value="">选择残局类型...</option>
+                                <option value="basic">基础残局 (8)</option>
+                                <option value="tactics">战术残局 (10)</option>
+                                <option value="pawn">兵残局 (8)</option>
+                                <option value="rook">车残局 (8)</option>
+                                <option value="queen">后残局 (6)</option>
+                                <option value="famous">著名棋局 (6)</option>
+                                <option value="complex">复杂中局 (7)</option>
+                                <option value="puzzle">战术谜题 (6)</option>
+                            </select>
+                            <select class="setting-select" id="endgame-position" disabled>
+                                <option value="">先选择类型...</option>
+                            </select>
+                        </div>
                         <div class="preset-puzzles">
-                            <button class="puzzle-chip" data-fen="r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4">Scholar's Mate</button>
-                            <button class="puzzle-chip" data-fen="6k1/5ppp/8/8/8/8/r4PPP/1R4K1 w - - 0 1">Back Rank</button>
-                            <button class="puzzle-chip" data-fen="r3k2r/ppp2ppp/2n5/3Np1q1/2B5/1P6/P1P2PPP/R2QK2R w KQkq - 0 1">Fried Liver</button>
-                            <button class="puzzle-chip" data-fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1">Starting Pos</button>
+                            <button class="puzzle-chip" id="btn-random-endgame">🎲 随机残局</button>
+                            <button class="puzzle-chip" data-fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1">标准开局</button>
                         </div>
                     </div>
                 </div>

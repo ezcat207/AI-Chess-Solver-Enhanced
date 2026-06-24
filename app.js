@@ -10,6 +10,8 @@
     let game = new ChessEngine();
     let whiteAI = new ChessAI(4, 'aggressive');
     let blackAI = new ChessAI(4, 'positional');
+    let whiteIsHuman = false;
+    let blackIsHuman = false;
     let running = false;
     let paused = false;
     let moveDelay = 500;
@@ -23,9 +25,170 @@
     let draws = 0;
     let matchLog = [];
     let timeoutId = null;
+    let selectedSquare = null;
+    let legalMovesFromSelected = [];
 
     const SPEED_MAP = [1500, 800, 500, 200, 50];
     const SPEED_LABELS = ['1.5s', '800ms', '500ms', '200ms', '50ms'];
+
+    // ===== ENDGAME DATABASE =====
+    const ENDGAME_LIBRARY = {
+        basic: {
+            name: "基础残局",
+            positions: [
+                { name: "王后杀王", fen: "4k3/8/8/8/8/8/8/4K2Q w - - 0 1" },
+                { name: "王车杀王", fen: "4k3/8/8/8/8/8/8/R3K3 w - - 0 1" },
+                { name: "双象杀王", fen: "4k3/8/8/8/8/8/3B4/2B1K3 w - - 0 1" },
+                { name: "象马杀王", fen: "4k3/8/8/8/8/8/2N5/2B1K3 w - - 0 1" },
+                { name: "双车杀王", fen: "4k3/8/8/8/8/8/R7/R3K3 w - - 0 1" },
+                { name: "后对车", fen: "4k3/8/8/8/8/8/4Q3/r3K3 w - - 0 1" },
+                { name: "车对象", fen: "4k3/8/8/8/8/8/3R4/b3K3 w - - 0 1" },
+                { name: "后对双象", fen: "3bk3/8/8/8/8/8/4Q3/4K3 w - - 0 1" }
+            ]
+        },
+        tactics: {
+            name: "战术残局",
+            positions: [
+                { name: "底线将杀", fen: "6k1/5ppp/8/8/8/8/r4PPP/1R4K1 w - - 0 1" },
+                { name: "闷杀 (Smothered Mate)", fen: "6rk/6pp/8/8/8/8/8/5N1K w - - 0 1" },
+                { name: "阿拉伯将杀", fen: "7k/8/5K2/8/8/8/8/R6N w - - 0 1" },
+                { name: "学者将杀", fen: "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4" },
+                { name: "法国炸肝", fen: "r3k2r/ppp2ppp/2n5/3Np1q1/2B5/1P6/P1P2PPP/R2QK2R w KQkq - 0 1" },
+                { name: "后翼弃兵", fen: "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N2N2/PP2PPPP/R1BQKB1R w KQkq d6 0 4" },
+                { name: "双车入侵", fen: "6k1/5ppp/8/8/8/8/R6R/6K1 w - - 0 1" },
+                { name: "后车配合", fen: "6k1/5ppp/8/8/8/8/Q7/R5K1 w - - 0 1" },
+                { name: "草地伴侣杀", fen: "6k1/5ppp/8/8/8/8/5PPP/R4QK1 w - - 0 1" },
+                { name: "双象攻击", fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1" }
+            ]
+        },
+        pawn: {
+            name: "兵残局",
+            positions: [
+                { name: "王对兵 (远)", fen: "4k3/8/8/8/8/8/4P3/4K3 w - - 0 1" },
+                { name: "王对兵 (近)", fen: "4k3/8/8/8/8/3P4/8/4K3 w - - 0 1" },
+                { name: "通路兵", fen: "4k3/8/8/8/3P4/8/8/4K3 w - - 0 1" },
+                { name: "连兵", fen: "4k3/8/8/8/8/3PP3/8/4K3 w - - 0 1" },
+                { name: "双兵对王", fen: "4k3/8/8/8/8/2PP4/8/4K3 w - - 0 1" },
+                { name: "兵链", fen: "4k3/8/8/3P4/2P5/8/8/4K3 w - - 0 1" },
+                { name: "孤兵", fen: "4k3/8/3p4/8/3P4/8/8/4K3 w - - 0 1" },
+                { name: "叠兵", fen: "4k3/3p4/3p4/8/8/8/8/4K3 w - - 0 1" }
+            ]
+        },
+        rook: {
+            name: "车残局",
+            positions: [
+                { name: "车兵对王", fen: "4k3/8/8/8/8/8/3P4/3RK3 w - - 0 1" },
+                { name: "卢塞纳定理", fen: "1K6/P7/8/8/8/8/5k2/1r6 w - - 0 1" },
+                { name: "菲利多守和", fen: "4k3/R7/8/8/8/8/r4KP1/8 w - - 0 1" },
+                { name: "车对车兵", fen: "8/8/8/8/8/8/rp5R/k6K w - - 0 1" },
+                { name: "车对双兵", fen: "8/8/8/8/8/2pp4/8/R3K2k w - - 0 1" },
+                { name: "双车对车", fen: "4k3/8/8/8/8/8/R7/R3K2r w - - 0 1" },
+                { name: "车兵对车", fen: "4k3/8/8/8/8/8/r3P3/4K2R w - - 0 1" },
+                { name: "活跃车对被动车", fen: "R5k1/6p1/8/8/8/8/5P1r/6K1 w - - 0 1" }
+            ]
+        },
+        queen: {
+            name: "后残局",
+            positions: [
+                { name: "后兵对王", fen: "4k3/8/8/8/8/8/4P3/4KQ2 w - - 0 1" },
+                { name: "后对兵 (7路)", fen: "4k3/p7/8/8/8/8/8/4KQ2 w - - 0 1" },
+                { name: "后对车兵", fen: "8/8/8/8/8/8/rp5Q/k6K w - - 0 1" },
+                { name: "后对双车", fen: "4k3/8/8/8/8/8/r7/r3KQ2 w - - 0 1" },
+                { name: "后对车马", fen: "4k3/8/8/8/8/5n2/r7/4KQ2 w - - 0 1" },
+                { name: "后对车象", fen: "3bk3/8/8/8/8/8/r7/4KQ2 w - - 0 1" }
+            ]
+        },
+        famous: {
+            name: "著名棋局",
+            positions: [
+                { name: "不朽之局", fen: "r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 b - - 0 1" },
+                { name: "常青之局", fen: "r2qk1nr/ppp2ppp/2n5/3N4/2BPp1b1/2P5/P4PPP/R1BQ1K1R w kq - 0 1" },
+                { name: "歌剧院之局", fen: "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1" },
+                { name: "卡帕布兰卡经典", fen: "r4rk1/1b3ppp/pqn1p3/1p6/4PP2/1BP3P1/PP1Q3P/R4RK1 w - - 0 1" },
+                { name: "塔尔攻击", fen: "r1b2rk1/ppq2ppp/2p5/4N3/2BP4/6Q1/PP3PPP/R4RK1 w - - 0 1" },
+                { name: "费舍尔牺牲", fen: "1rb2rk1/p4ppp/1p1qp1n1/3n2N1/2pP4/2P3P1/PPQ2PBP/R1B2RK1 w - - 0 1" }
+            ]
+        },
+        complex: {
+            name: "复杂中局",
+            positions: [
+                { name: "意大利开局", fen: "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1" },
+                { name: "西班牙开局", fen: "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1" },
+                { name: "西西里防御", fen: "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 1" },
+                { name: "法国防御", fen: "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1" },
+                { name: "斯拉夫防御", fen: "rnbqkbnr/pp1ppppp/2p5/8/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 1" },
+                { name: "王翼进攻", fen: "rnbqkb1r/ppp2ppp/3p1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1" },
+                { name: "龙变体", fen: "rnbqkb1r/pp2pppp/3p1n2/8/3NP3/2N5/PPP2PPP/R1BQKB1R w KQkq - 0 1" }
+            ]
+        },
+        puzzle: {
+            name: "战术谜题",
+            positions: [
+                { name: "双重攻击", fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 w kq - 0 1" },
+                { name: "牵制战术", fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/1PB1P3/5N2/P1PP1PPP/RNBQ1RK1 b kq - 0 1" },
+                { name: "串打战术", fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 1" },
+                { name: "消除防御", fen: "r2qkb1r/ppp2ppp/2np1n2/4p1B1/2B1P3/2NP4/PPP2PPP/R2QK2R w KQkq - 0 1" },
+                { name: "引离战术", fen: "r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQ1RK1 w - - 0 1" },
+                { name: "困子战术", fen: "r1bqk2r/ppp2ppp/2n2n2/3pp3/1bB1P3/2NP1N2/PPP2PPP/R1BQK2R w KQkq - 0 1" }
+            ]
+        }
+    };
+
+    // Random endgame generator
+    function generateRandomEndgame() {
+        const pieces = ['q', 'r', 'b', 'n', 'p'];
+        const board = Array(64).fill(null);
+
+        // Place white king
+        const wkPos = Math.floor(Math.random() * 64);
+        board[wkPos] = 'K';
+
+        // Place black king (not adjacent)
+        let bkPos;
+        do {
+            bkPos = Math.floor(Math.random() * 64);
+        } while (Math.abs(wkPos % 8 - bkPos % 8) <= 1 && Math.abs(Math.floor(wkPos / 8) - Math.floor(bkPos / 8)) <= 1);
+        board[bkPos] = 'k';
+
+        // Add random pieces (1-4 pieces)
+        const numPieces = Math.floor(Math.random() * 4) + 1;
+        for (let i = 0; i < numPieces; i++) {
+            let pos;
+            do {
+                pos = Math.floor(Math.random() * 64);
+            } while (board[pos] !== null);
+
+            const piece = pieces[Math.floor(Math.random() * pieces.length)];
+            const color = Math.random() > 0.5 ? piece.toUpperCase() : piece;
+
+            // No pawns on first or last rank
+            if (piece === 'p' && (Math.floor(pos / 8) === 0 || Math.floor(pos / 8) === 7)) continue;
+
+            board[pos] = color;
+        }
+
+        // Convert to FEN
+        let fen = '';
+        for (let r = 0; r < 8; r++) {
+            let empty = 0;
+            for (let c = 0; c < 8; c++) {
+                const p = board[r * 8 + c];
+                if (!p) {
+                    empty++;
+                } else {
+                    if (empty > 0) {
+                        fen += empty;
+                        empty = 0;
+                    }
+                    fen += p;
+                }
+            }
+            if (empty > 0) fen += empty;
+            if (r < 7) fen += '/';
+        }
+
+        return fen + ' w - - 0 1';
+    }
 
     // ===== PARTICLES =====
     function initParticles() {
@@ -68,6 +231,13 @@
                 sq.dataset.index = idx;
                 if (lastMove && (idx === lastMove.from || idx === lastMove.to)) sq.classList.add('last-move');
                 if (game.isInCheck(game.turn) && idx === game.findKing(game.turn)) sq.classList.add('check');
+
+                // Highlight selected square
+                if (selectedSquare !== null && idx === selectedSquare) sq.classList.add('selected');
+
+                // Highlight legal moves
+                if (legalMovesFromSelected.some(m => m.to === idx)) sq.classList.add('legal-move');
+
                 const p = game.board[idx];
                 if (p) {
                     const span = document.createElement('span');
@@ -76,6 +246,12 @@
                     span.dataset.index = idx;
                     sq.appendChild(span);
                 }
+
+                // Add click handler for human players
+                if (isCurrentPlayerHuman()) {
+                    sq.addEventListener('click', () => handleSquareClick(idx));
+                }
+
                 boardEl.appendChild(sq);
             }
         }
@@ -134,8 +310,13 @@
         } else {
             dot.className = 'turn-dot';
             const side = game.turn === COLOR.WHITE ? 'White' : 'Black';
-            const strat = game.turn === COLOR.WHITE ? whiteAI.strategy : blackAI.strategy;
-            text.textContent = `${side} (${strat}) thinking...`;
+            const isHuman = isCurrentPlayerHuman();
+            if (isHuman) {
+                text.textContent = `${side} (Human) - Your turn`;
+            } else {
+                const strat = game.turn === COLOR.WHITE ? whiteAI.strategy : blackAI.strategy;
+                text.textContent = `${side} (${strat}) thinking...`;
+            }
         }
     }
 
@@ -158,12 +339,24 @@
     }
 
     function updateAgentLabels() {
+        const wt = document.getElementById('white-type').value;
         const ws = document.getElementById('white-strategy').value;
         const wd = document.getElementById('white-depth').value;
+        const bt = document.getElementById('black-type').value;
         const bs = document.getElementById('black-strategy').value;
         const bd = document.getElementById('black-depth').value;
-        document.getElementById('white-agent-type').textContent = `${ws.charAt(0).toUpperCase() + ws.slice(1)} · Depth ${wd}`;
-        document.getElementById('black-agent-type').textContent = `${bs.charAt(0).toUpperCase() + bs.slice(1)} · Depth ${bd}`;
+
+        if (wt === 'human') {
+            document.getElementById('white-agent-type').textContent = 'Human Player';
+        } else {
+            document.getElementById('white-agent-type').textContent = `${ws.charAt(0).toUpperCase() + ws.slice(1)} · Depth ${wd}`;
+        }
+
+        if (bt === 'human') {
+            document.getElementById('black-agent-type').textContent = 'Human Player';
+        } else {
+            document.getElementById('black-agent-type').textContent = `${bs.charAt(0).toUpperCase() + bs.slice(1)} · Depth ${bd}`;
+        }
     }
 
     // ===== MOVE LIST =====
@@ -231,6 +424,71 @@
         }
     }
 
+    // ===== HUMAN PLAYER INTERACTION =====
+    function isCurrentPlayerHuman() {
+        return (game.turn === COLOR.WHITE && whiteIsHuman) || (game.turn === COLOR.BLACK && blackIsHuman);
+    }
+
+    function handleSquareClick(idx) {
+        if (!running || paused) return;
+        if (!isCurrentPlayerHuman()) return;
+
+        const piece = game.board[idx];
+
+        // If no square selected, try to select this square
+        if (selectedSquare === null) {
+            if (piece && piece.color === game.turn) {
+                selectedSquare = idx;
+                legalMovesFromSelected = game.generateLegalMoves().filter(m => m.from === idx);
+                renderBoard(false);
+            }
+        } else {
+            // Check if clicked on a legal move destination
+            const move = legalMovesFromSelected.find(m => m.to === idx);
+            if (move) {
+                // Handle pawn promotion
+                if (move.promotion) {
+                    // For simplicity, always promote to queen
+                    move.promotion = PIECE.QUEEN;
+                }
+                makeHumanMove(move);
+            } else if (piece && piece.color === game.turn) {
+                // Clicked on another own piece, switch selection
+                selectedSquare = idx;
+                legalMovesFromSelected = game.generateLegalMoves().filter(m => m.from === idx);
+                renderBoard(false);
+            } else {
+                // Clicked on empty square or opponent piece (but not legal move), deselect
+                selectedSquare = null;
+                legalMovesFromSelected = [];
+                renderBoard(false);
+            }
+        }
+    }
+
+    function makeHumanMove(move) {
+        const san = game.moveToSAN(move);
+        game.makeMove(move);
+        lastMove = move;
+        moveList.push(san);
+        totalMovesPlayed++;
+        selectedSquare = null;
+        legalMovesFromSelected = [];
+
+        renderBoard(true);
+        renderMoveList();
+        updateEval();
+        updateStats(null);
+        updateHeaderStats();
+
+        // Check game over after move
+        const status = game.getGameStatus();
+        if (status.over) { showGameOver(status); return; }
+
+        // Continue to next move
+        playNextMove();
+    }
+
     // ===== GAME LOOP =====
     function playNextMove() {
         if (!running || paused) return;
@@ -238,8 +496,16 @@
         const status = game.getGameStatus();
         if (status.over) { showGameOver(status); return; }
 
-        const currentAI = game.turn === COLOR.WHITE ? whiteAI : blackAI;
         updateTurnIndicator();
+
+        // If current player is human, wait for click
+        if (isCurrentPlayerHuman()) {
+            renderBoard(false);
+            return;
+        }
+
+        // AI move
+        const currentAI = game.turn === COLOR.WHITE ? whiteAI : blackAI;
 
         // Use setTimeout so UI updates between moves
         timeoutId = setTimeout(() => {
@@ -275,6 +541,10 @@
         running = true;
         paused = false;
 
+        // Check if players are human or AI
+        whiteIsHuman = document.getElementById('white-type').value === 'human';
+        blackIsHuman = document.getElementById('black-type').value === 'human';
+
         // Build AIs from settings
         const ws = document.getElementById('white-strategy').value;
         const wd = parseInt(document.getElementById('white-depth').value);
@@ -308,6 +578,8 @@
         game = fen ? new ChessEngine(fen) : new ChessEngine();
         lastMove = null;
         moveList = [];
+        selectedSquare = null;
+        legalMovesFromSelected = [];
 
         renderBoard();
         renderMoveList();
@@ -341,7 +613,7 @@
         });
 
         // Strategy selectors
-        ['white-strategy', 'white-depth', 'black-strategy', 'black-depth'].forEach(id => {
+        ['white-type', 'white-strategy', 'white-depth', 'black-type', 'black-strategy', 'black-depth'].forEach(id => {
             document.getElementById(id).addEventListener('change', updateAgentLabels);
         });
 
@@ -350,8 +622,50 @@
             resetGame();
         });
 
+        // Endgame category selector
+        document.getElementById('endgame-category').addEventListener('change', (e) => {
+            const category = e.target.value;
+            const posSelect = document.getElementById('endgame-position');
+
+            if (!category) {
+                posSelect.disabled = true;
+                posSelect.innerHTML = '<option value="">先选择类型...</option>';
+                return;
+            }
+
+            posSelect.disabled = false;
+            posSelect.innerHTML = '<option value="">选择具体局面...</option>';
+
+            const positions = ENDGAME_LIBRARY[category].positions;
+            positions.forEach((pos, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = pos.name;
+                posSelect.appendChild(opt);
+            });
+        });
+
+        // Endgame position selector
+        document.getElementById('endgame-position').addEventListener('change', (e) => {
+            const category = document.getElementById('endgame-category').value;
+            const posIdx = e.target.value;
+
+            if (category && posIdx !== '') {
+                const fen = ENDGAME_LIBRARY[category].positions[posIdx].fen;
+                document.getElementById('fen-input').value = fen;
+                resetGame();
+            }
+        });
+
+        // Random endgame
+        document.getElementById('btn-random-endgame').addEventListener('click', () => {
+            const fen = generateRandomEndgame();
+            document.getElementById('fen-input').value = fen;
+            resetGame();
+        });
+
         // Puzzle presets
-        document.querySelectorAll('.puzzle-chip').forEach(btn => {
+        document.querySelectorAll('.puzzle-chip[data-fen]').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.getElementById('fen-input').value = btn.dataset.fen;
                 resetGame();

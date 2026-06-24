@@ -80,11 +80,28 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 .turn-dot.ended { background: var(--text3); animation: none; }
 @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
 
-.square { display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.15s ease; }
+.square { display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.15s ease; cursor: pointer; }
 .square.light { background: var(--board-light); }
 .square.dark { background: var(--board-dark); }
 .square.last-move { background: var(--last-move) !important; }
 .square.check { box-shadow: inset 0 0 18px var(--check); }
+.square.selected { box-shadow: inset 0 0 0 3px rgba(99, 102, 241, 0.8) !important; }
+.square.legal-move::after {
+    content: '';
+    position: absolute;
+    width: 28%;
+    height: 28%;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.5);
+    pointer-events: none;
+}
+.square.legal-move:has(.piece)::after {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: transparent;
+    border: 3px solid rgba(99, 102, 241, 0.6);
+}
 
 /* Pieces — distinct black vs white */
 .piece {
@@ -200,6 +217,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 .match-num { font-family: var(--mono); color: var(--text3); min-width: 20px; }
 .match-result { flex: 1; font-weight: 600; }
 .match-detail { font-size: 0.65rem; color: var(--text3); font-family: var(--mono); }
+
+/* Endgame Selector */
+.endgame-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem; }
 
 /* Game Over Overlay */
 .gameover-overlay { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; justify-content: center; pointer-events: none; }
